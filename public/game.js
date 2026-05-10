@@ -1020,8 +1020,30 @@ function showRoomScreen() {
 
 // 初始化
 document.addEventListener('DOMContentLoaded', () => {
-    // 自动聚焦到昵称输入框
-    document.getElementById('player-name').focus();
+    // 自动以游客身份进入游戏，无需登录
+    const savedLang = localStorage.getItem('selectedLanguage') || 'zh-CN';
+    if (typeof applyLanguage === 'function') {
+        applyLanguage(savedLang);
+    }
+    // 隐藏语言选择和登录界面，直接进入大厅
+    const langScreen = document.getElementById('lang-screen');
+    const loginScreen = document.getElementById('login-screen');
+    if (langScreen) langScreen.style.display = 'none';
+    if (loginScreen) loginScreen.style.display = 'none';
+    
+    // 自动生成游客昵称并连接
+    const guestName = '玩家' + Math.floor(Math.random() * 9000 + 1000);
+    playerName = guestName;
+    const nameInput = document.getElementById('player-name');
+    if (nameInput) nameInput.value = guestName;
+    connect();
+    // 发送join消息
+    setTimeout(() => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: 'join', name: guestName }));
+            showLobby();
+        }
+    }, 500);
 });
 
 function renderPokerBoard(container) {
