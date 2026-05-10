@@ -137,6 +137,28 @@
             margin-bottom: 15px;
         }
 
+        .game-card .start-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 30px;
+            background: linear-gradient(90deg, #e94560, #f39c12);
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+        }
+
+        .game-card .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+        }
+
         /* 房间界面 */
         #room-screen {
             display: none;
@@ -1063,46 +1085,53 @@
             <p style="color: #888; margin-bottom: 20px;">点击创建房间，邀请朋友一起玩</p>
             
             <div class="game-grid">
-                <div class="game-card" onclick="createRoom('gomoku')">
+                <div class="game-card">
                     <div class="icon">⚫</div>
                     <h3>五子棋</h3>
                     <p>经典五子连珠，先连成五子获胜</p>
+                    <button class="start-btn" onclick="createRoom('gomoku')">🎮 开始游戏</button>
                 </div>
                 
-                <div class="game-card" onclick="createRoom('go')">
+                <div class="game-card">
                     <div class="icon">⬛</div>
                     <h3>围棋</h3>
                     <p>黑白对弈，围地多者胜</p>
+                    <button class="start-btn" onclick="createRoom('go')">🎮 开始游戏</button>
                 </div>
                 
-                <div class="game-card" onclick="createRoom('chineseChess')">
+                <div class="game-card">
                     <div class="icon">將</div>
                     <h3>中国象棋</h3>
                     <p>楚河汉界，将死对方为胜</p>
+                    <button class="start-btn" onclick="createRoom('chineseChess')">🎮 开始游戏</button>
                 </div>
                 
-                <div class="game-card" onclick="createRoom('chess')">
+                <div class="game-card">
                     <div class="icon">♔</div>
                     <h3>国际象棋</h3>
                     <p>经典国际象棋，将死对方国王</p>
+                    <button class="start-btn" onclick="createRoom('chess')">🎮 开始游戏</button>
                 </div>
                 
-                <div class="game-card" onclick="createRoom('checkers')">
+                <div class="game-card">
                     <div class="icon">🔴</div>
                     <h3>跳棋</h3>
                     <p>跳吃对方棋子，消灭对手获胜</p>
+                    <button class="start-btn" onclick="createRoom('checkers')">🎮 开始游戏</button>
                 </div>
                 
-                <div class="game-card" onclick="createRoom('othello')">
+                <div class="game-card">
                     <div class="icon">⚪</div>
                     <h3>黑白棋</h3>
                     <p>翻转对手棋子，棋子多者胜</p>
+                    <button class="start-btn" onclick="createRoom('othello')">🎮 开始游戏</button>
                 </div>
                 
-                <div class="game-card" onclick="createRoom('flightChess')">
+                <div class="game-card">
                     <div class="icon">✈️</div>
                     <h3>飞行棋</h3>
                     <p>掷骰子前进，先到终点获胜</p>
+                    <button class="start-btn" onclick="createRoom('flightChess')">🎮 开始游戏</button>
                 </div>
             </div>
         </div>
