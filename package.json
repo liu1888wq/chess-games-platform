@@ -1,0 +1,15 @@
+{
+  "name": "chess-games-platform",
+  "version": "1.0.0",
+  "description": "多人联机棋类游戏平台 - 支持五子棋、围棋、跳棋、国际象棋、黑白棋、飞行棋、中国象棋",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2",
+    "uuid": "^9.0.0"
+  }
+}
