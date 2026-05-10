@@ -18,7 +18,8 @@ const gameConfigs = {
     chess: { name: '国际象棋', rows: 8, cols: 8 },
     checkers: { name: '跳棋', rows: 8, cols: 8 },
     othello: { name: '黑白棋', rows: 8, cols: 8 },
-    flightChess: { name: '飞行棋', rows: 1, cols: 1 }
+    flightChess: { name: '飞行棋', rows: 1, cols: 1 },
+    poker: { name: '扑克牌', rows: 1, cols: 1 }
 };
 
 // 棋子显示
@@ -366,6 +367,7 @@ function renderBoard() {
         case 'flightChess':
             renderFlightChessBoard(container);
             break;
+        case 'poker': renderPokerBoard(container); break;
     }
 }
 
@@ -1021,3 +1023,68 @@ document.addEventListener('DOMContentLoaded', () => {
     // 自动聚焦到昵称输入框
     document.getElementById('player-name').focus();
 });
+
+function renderPokerBoard(container) {
+    if (!gameState) return;
+    
+    const isPlayerTurn = gameState.currentPlayer === 'player' && gameState.status === 'playing';
+    const gameEnded = gameState.status === 'ended';
+    
+    container.innerHTML = `
+        <div style="text-align: center; padding: 20px; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #f39c12; margin-bottom: 20px;">🃏 21点 Blackjack</h2>
+            
+            <!-- AI手牌 -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #aaa; margin-bottom: 10px;">🤖 AI ${gameEnded ? '(' + gameState.aiScore + '点)' : ''}</h3>
+                <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                    ${gameState.aiHand.map((card, i) => {
+                        if (!gameEnded && i > 0) {
+                            return '<div style="width: 70px; height: 100px; background: linear-gradient(135deg, #e94560, #c0392b); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; border: 2px solid #fff;">🂠</div>';
+                        }
+                        const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
+                        return '<div style="width: 70px; height: 100px; background: #fff; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; color: ' + color + '; border: 2px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><span style="font-size: 24px; font-weight: bold;">' + card.value + '</span><span style="font-size: 20px;">' + card.suit + '</span></div>';
+                    }).join('')}
+                </div>
+            </div>
+            
+            <!-- 玩家手牌 -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #f39c12; margin-bottom: 10px;">👤 玩家 (${gameState.playerScore}点)</h3>
+                <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                    ${gameState.playerHand.map(card => {
+                        const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
+                        return '<div style="width: 70px; height: 100px; background: #fff; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 18px; color: ' + color + '; border: 2px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><span style="font-size: 24px; font-weight: bold;">' + card.value + '</span><span style="font-size: 20px;">' + card.suit + '</span></div>';
+                    }).join('')}
+                </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            ${!gameEnded ? `
+                <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px;">
+                    ${isPlayerTurn ? `
+                        <button onclick="pokerHit()" style="padding: 15px 40px; font-size: 1.2em; background: linear-gradient(90deg, #27ae60, #2ecc71); color: #fff; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;">🃏 要牌</button>
+                        <button onclick="pokerStand()" style="padding: 15px 40px; font-size: 1.2em; background: linear-gradient(90deg, #e94560, #c0392b); color: #fff; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;">✋ 停牌</button>
+                    ` : '<p style="color: #aaa; font-size: 1.1em;">AI正在思考...</p>'}
+                </div>
+            ` : ''}
+            
+            <!-- 结果消息 -->
+            ${gameState.message ? `
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <p style="font-size: 1.3em; color: ${gameState.winner === 'player' ? '#2ecc71' : gameState.winner === 'ai' ? '#e74c3c' : '#f39c12'}; font-weight: bold;">${gameState.message}</p>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function pokerHit() {
+    if (!ws || !currentRoom) return;
+    ws.send(JSON.stringify({ type: 'move', action: 'hit' }));
+}
+
+function pokerStand() {
+    if (!ws || !currentRoom) return;
+    ws.send(JSON.stringify({ type: 'move', action: 'stand' }));
+}

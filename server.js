@@ -149,6 +149,7 @@ function joinRoom(playerId, roomCode, playerName) {
 function getPlayerColors(gameType) {
     if (gameType === 'flightChess') return ['red', 'blue', 'green', 'yellow'];
     if (gameType === 'checkers') return ['red', 'blue'];
+    if (gameType === 'poker') return ['player', 'ai'];
     return ['black', 'white'];
 }
 
@@ -271,6 +272,7 @@ function initGameState(gameType) {
         case 'checkers': return initCheckersState();
         case 'othello': return initOthelloState();
         case 'flightChess': return initFlightChessState();
+        case 'poker': return initPokerState();
         default: return {};
     }
 }
@@ -328,6 +330,57 @@ function initFlightChessState() {
     return { positions: { red: [-1, -1, -1, -1], blue: [-1, -1, -1, -1], green: [-1, -1, -1, -1], yellow: [-1, -1, -1, -1] }, finished: { red: 0, blue: 0, green: 0, yellow: 0 }, currentPlayer: 'red', dice: 0, moves: [] };
 }
 
+function initPokerState() {
+    // 创建一副牌
+    const suits = ['♠', '♥', '♦', '♣'];
+    const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+    const deck = [];
+    for (const suit of suits) {
+        for (const value of values) {
+            deck.push({ suit, value });
+        }
+    }
+    // 洗牌
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    // 发牌
+    const playerHand = [deck.pop(), deck.pop()];
+    const aiHand = [deck.pop(), deck.pop()];
+    return {
+        deck,
+        playerHand,
+        aiHand,
+        playerScore: calculateHandScore(playerHand),
+        aiScore: calculateHandScore(aiHand),
+        status: 'playing', // playing, bust, stand, ended
+        currentPlayer: 'player',
+        winner: null,
+        message: ''
+    };
+}
+
+function calculateHandScore(hand) {
+    let score = 0;
+    let aces = 0;
+    for (const card of hand) {
+        if (card.value === 'A') {
+            aces++;
+            score += 11;
+        } else if (['J', 'Q', 'K'].includes(card.value)) {
+            score += 10;
+        } else {
+            score += parseInt(card.value);
+        }
+    }
+    while (score > 21 && aces > 0) {
+        score -= 10;
+        aces--;
+    }
+    return score;
+}
+
 // ==================== 游戏移动执行 ====================
 function executeMove(gameType, state, from, to, playerColor, extra) {
     switch (gameType) {
@@ -338,6 +391,7 @@ function executeMove(gameType, state, from, to, playerColor, extra) {
         case 'checkers': return executeCheckersMove(state, from, to, playerColor);
         case 'othello': return executeOthelloMove(state, to, playerColor);
         case 'flightChess': return executeFlightChessMove(state, from, to, playerColor, extra);
+        case 'poker': return executePokerMove(state, { from, to, playerColor, extra });
         default: return { valid: false, message: '未知游戏类型' };
     }
 }
@@ -805,6 +859,38 @@ function executeFlightChessMove(state, from, to, playerColor, extra) {
     return { valid: true, state: newState, nextTurn: newState.currentPlayer, winner };
 }
 
+function executePokerMove(gameState, move) {
+    const { action } = move;
+    if (gameState.status !== 'playing' || gameState.currentPlayer !== 'player') {
+        return { valid: false, message: '不是你的回合' };
+    }
+
+    if (action === 'hit') {
+        const card = gameState.deck.pop();
+        gameState.playerHand.push(card);
+        gameState.playerScore = calculateHandScore(gameState.playerHand);
+        if (gameState.playerScore > 21) {
+            gameState.status = 'ended';
+            gameState.winner = 'ai';
+            gameState.message = '玩家爆牌！AI获胜！';
+        } else if (gameState.playerScore === 21) {
+            gameState.status = 'ended';
+            gameState.winner = 'player';
+            gameState.message = '21点！玩家获胜！';
+        } else {
+            gameState.currentPlayer = 'ai';
+            gameState.message = 'AI正在思考...';
+        }
+        return { valid: true };
+    } else if (action === 'stand') {
+        gameState.status = 'stand';
+        gameState.currentPlayer = 'ai';
+        gameState.message = 'AI正在思考...';
+        return { valid: true };
+    }
+    return { valid: false, message: '无效操作' };
+}
+
 // ==================== AI计算 ====================
 function calculateAIMove(gameType, state, aiColor) {
     switch (gameType) {
@@ -815,6 +901,7 @@ function calculateAIMove(gameType, state, aiColor) {
         case 'checkers': return calculateCheckersAIMove(state, aiColor);
         case 'othello': return calculateOthelloAIMove(state, aiColor);
         case 'flightChess': return calculateFlightChessAIMove(state, aiColor);
+        case 'poker': return calculatePokerAIMove(state);
         default: return null;
     }
 }
@@ -1059,6 +1146,38 @@ function calculateFlightChessAIMove(state, aiColor) {
         if (positions[i] === -1) return { from: i, to: null, extra: { dice: 6 } };
     }
     return null;
+}
+
+function calculatePokerAIMove(gameState) {
+    // AI在17点以下必须要牌
+    while (gameState.aiScore < 17) {
+        const card = gameState.deck.pop();
+        gameState.aiHand.push(card);
+        gameState.aiScore = calculateHandScore(gameState.aiHand);
+    }
+
+    gameState.status = 'ended';
+    if (gameState.aiScore > 21) {
+        gameState.winner = 'player';
+        gameState.message = 'AI爆牌！玩家获胜！';
+    } else if (gameState.playerScore > gameState.aiScore) {
+        gameState.winner = 'player';
+        gameState.message = `玩家${gameState.playerScore}点 vs AI${gameState.aiScore}点，玩家获胜！`;
+    } else if (gameState.aiScore > gameState.playerScore) {
+        gameState.winner = 'ai';
+        gameState.message = `玩家${gameState.playerScore}点 vs AI${gameState.aiScore}点，AI获胜！`;
+    } else {
+        gameState.winner = 'draw';
+        gameState.message = `双方${gameState.playerScore}点，平局！`;
+    }
+
+    return {
+        hand: gameState.aiHand,
+        score: gameState.aiScore,
+        winner: gameState.winner,
+        message: gameState.message,
+        status: gameState.status
+    };
 }
 
 setInterval(() => {
