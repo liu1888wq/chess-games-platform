@@ -8,6 +8,11 @@ const app = express();
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ server });
 
+// 健康检查端点
+app.get('/health', (req, res) => {
+    res.json({ status: 'ok', time: new Date().toISOString() });
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 const rooms = new Map();
