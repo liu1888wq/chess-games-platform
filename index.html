@@ -1054,10 +1054,12 @@
                 <div class="room-code">房间号: <span id="room-code">A1B2C3</span></div>
             </div>
             <div class="game-area">
-                <div class="game-board-placeholder">
-                    <span class="icon" id="current-game-icon">♟️</span>
-                    <p>游戏区域</p>
-                    <p style="font-size: 13px; margin-top: 10px;">等待其他玩家加入...</p>
+                <div id="game-board" style="width:100%;padding:10px;">
+                    <div class="game-board-placeholder">
+                        <span class="icon" id="current-game-icon">♟️</span>
+                        <p>游戏区域</p>
+                        <p style="font-size: 13px; margin-top: 10px;">选择游戏开始对战</p>
+                    </div>
                 </div>
             </div>
             <div class="sidebar">
@@ -5988,12 +5990,29 @@ function douDiZhuPlay() {
 
         function selectLanguage(code) {
             selectedLang = code;
+            // 同时更新 i18n 系统的语言
+            if (typeof currentLang !== 'undefined') {
+                currentLang = code;
+            }
+            if (typeof applyLanguage === 'function') {
+                applyLanguage(code);
+            }
             renderCountries(document.getElementById('country-search').value);
             document.getElementById('confirm-lang-btn').disabled = false;
         }
 
         function confirmLanguage() {
-            if (selectedLang) switchPage('login-page');
+            if (selectedLang) {
+                // 保存语言设置
+                localStorage.setItem('selectedLang', selectedLang);
+                if (typeof currentLang !== 'undefined') {
+                    currentLang = selectedLang;
+                }
+                if (typeof applyLanguage === 'function') {
+                    applyLanguage(selectedLang);
+                }
+                switchPage('login-page');
+            }
         }
 
         async function handleRegister() {
