@@ -873,8 +873,8 @@
 </head>
 <body>
 
-<!-- 启动页 -->
-    <div id="splash-screen" class="page active">
+<!-- 启动页已移除，直接进入语言选择 -->
+    <div id="splash-screen" class="page" style="display:none!important;">
         <div class="splash-logo">♟️</div>
         <h1 class="splash-title">棋类游戏平台</h1>
         <p class="splash-subtitle">与全球玩家一起对弈</p>
@@ -884,7 +884,7 @@
     </div>
 
     <!-- 语言选择页 -->
-    <div id="language-page" class="page">
+    <div id="language-page" class="page active">
         <h2 class="page-title">选择您的语言</h2>
         <input type="text" class="search-box" id="country-search" placeholder="搜索国家..." oninput="filterCountries()">
         <div class="country-grid" id="country-grid"></div>
