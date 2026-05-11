@@ -5963,14 +5963,20 @@ const countries = [
         function initSplash() {
             let progress = 0;
             const bar = document.getElementById('progress-bar');
+            // 强制3秒后切换到语言选择页
+            const forceTimeout = setTimeout(() => {
+                switchPage('language-page');
+            }, 3000);
+            
             const interval = setInterval(() => {
                 progress += Math.random() * 15;
                 if (progress >= 100) {
                     progress = 100;
                     clearInterval(interval);
+                    clearTimeout(forceTimeout);
                     setTimeout(() => switchPage('language-page'), 300);
                 }
-                bar.style.width = progress + '%';
+                if (bar) bar.style.width = progress + '%';
             }, 200);
         }
 
