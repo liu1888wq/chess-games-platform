@@ -4401,26 +4401,15 @@ function closeTranslateModal() {
 // 初始化
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-    // 检查是否已选择语言
-    const savedLang = localStorage.getItem('selectedLang');
-    
-    if (savedLang) {
-        currentLang = savedLang;
-        tempLang = savedLang;
-        applyLanguage(currentLang);
-        
-        // 直接显示登录界面
-        document.getElementById('lang-screen').style.display = 'none';
-        document.getElementById('login-screen').style.display = 'flex';
-        document.getElementById('lang-switch-bar').style.display = 'block';
-    } else {
-        // 显示语言选择界面
-        document.getElementById('lang-screen').style.display = 'flex';
-        document.getElementById('login-screen').style.display = 'none';
-    }
-    
-    // 初始化长按翻译
-    setTimeout(initLongPress, 1000);
+    // 新UI中不需要这些操作，由主逻辑处理
+    try {
+        const savedLang = localStorage.getItem('selectedLang');
+        if (savedLang) {
+            currentLang = savedLang;
+            tempLang = savedLang;
+            applyLanguage(currentLang);
+        }
+    } catch(e) {}
 });
 
     </script>
@@ -5454,32 +5443,9 @@ function showRoomScreen() {
     document.getElementById('room-screen').style.display = 'block';
 }
 
-// 初始化
+// 初始化 - 新UI中由主逻辑处理
 document.addEventListener('DOMContentLoaded', () => {
-    // 自动以游客身份进入游戏，无需登录
-    const savedLang = localStorage.getItem('selectedLanguage') || 'zh-CN';
-    if (typeof applyLanguage === 'function') {
-        applyLanguage(savedLang);
-    }
-    // 隐藏语言选择和登录界面，直接进入大厅
-    const langScreen = document.getElementById('lang-screen');
-    const loginScreen = document.getElementById('login-screen');
-    if (langScreen) langScreen.style.display = 'none';
-    if (loginScreen) loginScreen.style.display = 'none';
-    
-    // 自动生成游客昵称并连接
-    const guestName = '玩家' + Math.floor(Math.random() * 9000 + 1000);
-    playerName = guestName;
-    const nameInput = document.getElementById('player-name');
-    if (nameInput) nameInput.value = guestName;
-    connect();
-    // 发送join消息
-    setTimeout(() => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(JSON.stringify({ type: 'join', name: guestName }));
-            showLobby();
-        }
-    }, 500);
+    // 离线版本不需要WebSocket连接
 });
 
 function renderPokerBoard(container) {
@@ -5915,16 +5881,7 @@ function douDiZhuPlay() {
 
     <!-- ===== 内联 app.js (应用初始化) ===== -->
     <script>
-// 国家数据 (50个示例)
-const countries = [
-    {code:'CN',name:'中国',flag:'🇨🇳'},{code:'US',name:'美国',flag:'🇺🇸'},{code:'JP',name:'日本',flag:'🇯🇵'},{code:'KR',name:'韩国',flag:'🇰🇷'},
-    {code:'GB',name:'英国',flag:'🇬🇧'},{code:'FR',name:'法国',flag:'🇫🇷'},{code:'DE',name:'德国',flag:'🇩🇪'},{code:'IT',name:'意大利',flag:'🇮🇹'},
-    {code:'ES',name:'西班牙',flag:'🇪🇸'},{code:'RU',name:'俄罗斯',flag:'🇷🇺'},{code:'CA',name:'加拿大',flag:'🇨🇦'},{code:'AU',name:'澳大利亚',flag:'🇦🇺'},
-    {code:'BR',name:'巴西',flag:'🇧🇷'},{code:'IN',name:'印度',flag:'🇮🇳'},{code:'MX',name:'墨西哥',flag:'🇲🇽'},{code:'ID',name:'印尼',flag:'🇮🇩'},
-    {code:'TR',name:'土耳其',flag:'🇹🇷'},{code:'SA',name:'沙特',flag:'🇸🇦'},{code:'ZA',name:'南非',flag:'🇿🇦'},{code:'AR',name:'阿根廷',flag:'🇦🇷'},
-    {code:'TH',name:'泰国',flag:'🇹🇭'},{code:'VN',name:'越南',flag:'🇻🇳'},{code:'PH',name:'菲律宾',flag:'🇵🇭'},{code:'MY',name:'马来西亚',flag:'🇲🇾'},
-    {code:'SG',name:'新加坡',flag:'🇸🇬'},{code:'TW',
-
+// 国家数据已合并到下面的主逻辑中
     </script>
 
     <!-- ===== 内联主逻辑 (原 index.html script) ===== -->
