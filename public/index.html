@@ -2,1373 +2,1499 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>棋类游戏平台</title>
     <style>
+        :root {
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #1a1a2e;
+            --bg-gradient-start: #0f0f23;
+            --bg-gradient-mid: #1a1a3e;
+            --bg-gradient-end: #2d1b4e;
+            --accent-primary: #e94560;
+            --accent-secondary: #f39c12;
+            --accent-glow: rgba(233, 69, 96, 0.5);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6a6a8a;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-bg-hover: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-border-hover: rgba(255, 255, 255, 0.3);
+            --neon-pink: #ff2d95;
+            --neon-blue: #00d4ff;
+            --neon-purple: #b829dd;
+            --success: #00d26a;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
         }
 
         body {
-            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-            min-height: 100vh;
-            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 50%, var(--bg-gradient-end) 100%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            position: relative;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(233, 69, 96, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(184, 41, 221, 0.08) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 20px var(--accent-glow), 0 0 40px rgba(233, 69, 96, 0.3); }
+            50% { box-shadow: 0 0 30px var(--accent-glow), 0 0 60px rgba(233, 69, 96, 0.5); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes scaleIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .page {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1;
+            display: none;
             padding: 20px;
+            padding-bottom: 100px;
         }
 
-        header {
-            text-align: center;
-            padding: 30px 0;
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
         }
 
-        header h1 {
-            font-size: 2.5em;
-            background: linear-gradient(90deg, #e94560, #f39c12);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-        }
-
-        header p {
-            color: #888;
-            font-size: 1.1em;
-        }
-
-        /* 登录界面 */
-        #login-screen {
+        #splash-screen {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 60vh;
+            z-index: 1000;
         }
 
-        .login-box {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 40px;
-            width: 100%;
-            max-width: 400px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        #splash-screen.active {
+            display: flex;
         }
 
-        .login-box h2 {
-            text-align: center;
+        .splash-logo {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
             margin-bottom: 30px;
-            color: #e94560;
+            animation: float 3s ease-in-out infinite, glow 2s ease-in-out infinite;
+            box-shadow: 0 10px 40px rgba(233, 69, 96, 0.4);
+        }
+
+        .splash-title {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--text-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .splash-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 50px;
+        }
+
+        .splash-progress {
+            width: 200px;
+            height: 4px;
+            background: var(--glass-bg);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .splash-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--neon-pink));
+            color: white;
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(233, 69, 96, 0.6);
+        }
+
+        .btn-secondary {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-guest {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--glass-border);
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            background: var(--glass-bg-hover);
+            border-color: var(--glass-border-hover);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 14px 20px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+        }
+
+        .country-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 12px;
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .country-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 8px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .country-item:hover {
+            background: var(--glass-bg-hover);
+            transform: scale(1.05);
+        }
+
+        .country-item.selected {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .country-flag {
+            font-size: 32px;
+            margin-bottom: 6px;
+        }
+
+        .country-name {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: center;
         }
 
         .input-group {
             margin-bottom: 20px;
         }
 
-        .input-group label {
+        .input-label {
             display: block;
             margin-bottom: 8px;
-            color: #ccc;
+            color: var(--text-secondary);
+            font-size: 14px;
         }
 
-        .input-group input {
+        .input-field {
             width: 100%;
-            padding: 12px 15px;
+            padding: 14px 20px;
+            background: var(--glass-bg);
             border: none;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            border-bottom: 2px solid var(--glass-border);
+            border-radius: 12px 12px 0 0;
+            color: var(--text-primary);
             font-size: 16px;
+            transition: all 0.3s ease;
         }
 
-        .input-group input:focus {
+        .input-field:focus {
             outline: none;
-            background: rgba(255, 255, 255, 0.2);
+            border-bottom-color: var(--accent-primary);
+            box-shadow: 0 4px 15px rgba(233, 69, 96, 0.2);
         }
 
-        /* 游戏选择 */
-        #lobby {
-            display: none;
+        .login-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding-top: 60px;
         }
 
-        .game-grid {
+        .user-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: var(--glass-bg);
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            border: 3px solid var(--glass-border);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .user-stats {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 80px;
         }
 
         .game-card {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .game-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #e94560;
+            background: var(--glass-bg-hover);
+            border-color: var(--glass-border-hover);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(233, 69, 96, 0.3);
         }
 
-        .game-card h3 {
-            font-size: 1.4em;
-            margin-bottom: 10px;
-            color: #f39c12;
+        .game-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
         }
 
-        .game-card p {
-            color: #aaa;
-            font-size: 0.9em;
+        .game-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
         }
 
-        .game-card .icon {
-            font-size: 3em;
-            margin-bottom: 15px;
+        .game-players {
+            font-size: 12px;
+            color: var(--text-secondary);
         }
 
-        .game-card .start-btn {
-            display: inline-block;
-            margin-top: 15px;
-            padding: 10px 30px;
-            background: linear-gradient(90deg, #e94560, #f39c12);
-            color: #fff;
-            border: none;
-            border-radius: 25px;
-            font-size: 1.1em;
-            font-weight: bold;
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 20px;
+            color: var(--text-secondary);
             cursor: pointer;
             transition: all 0.3s ease;
-            text-align: center;
-            width: 100%;
+            border-radius: 12px;
         }
 
-        .game-card .start-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        .nav-item:hover, .nav-item.active {
+            color: var(--accent-primary);
         }
 
-        /* 房间界面 */
-        #room-screen {
-            display: none;
+        .nav-item.active {
+            background: var(--glass-bg);
         }
 
-        .room-container {
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 20px;
-            margin-top: 20px;
+        .nav-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
         }
 
-        .game-area {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 15px;
-            padding: 20px;
+        .nav-label {
+            font-size: 11px;
         }
 
-        .sidebar {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 20px;
+        .game-room {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
-        .room-info {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 15px;
+        .room-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
-        }
-
-        .room-info h3 {
-            color: #f39c12;
-            margin-bottom: 10px;
         }
 
         .room-code {
-            font-size: 1.8em;
-            color: #e94560;
-            font-weight: bold;
-            letter-spacing: 3px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .room-code span {
+            color: var(--accent-primary);
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .game-area {
+            flex: 1;
+            background: var(--glass-bg);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            margin-bottom: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .game-board-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .game-board-placeholder .icon {
+            font-size: 64px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .sidebar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .sidebar-section {
+            background: var(--glass-bg);
+            border-radius: 16px;
+            padding: 15px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent-secondary);
         }
 
         .player-list {
-            margin-bottom: 20px;
+            max-height: 150px;
+            overflow-y: auto;
         }
 
         .player-item {
             display: flex;
             align-items: center;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-
-        .player-item .color-dot {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            margin-right: 10px;
-        }
-
-        .player-item .ready-badge {
-            margin-left: auto;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-size: 0.8em;
-        }
-
-        .ready-badge.ready {
-            background: #27ae60;
-        }
-
-        .ready-badge.not-ready {
-            background: #7f8c8d;
-        }
-
-        /* 棋盘 */
-        .board-container {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .board {
-            position: relative;
-            background: #d4a574;
-            border-radius: 5px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-        }
-
-        .board-cell {
-            position: absolute;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .board-cell:hover {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-        }
-
-        .board-cell.selected {
-            background: rgba(233, 69, 96, 0.5);
-            border-radius: 50%;
-        }
-
-        .board-cell.valid-move {
-            background: rgba(39, 174, 96, 0.4);
-            border-radius: 50%;
-        }
-
-        .piece {
-            width: 80%;
-            height: 80%;
-            border-radius: 50%;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-
-        .piece.black {
-            background: radial-gradient(circle at 30% 30%, #555, #000);
-            color: #fff;
-        }
-
-        .piece.white {
-            background: radial-gradient(circle at 30% 30%, #fff, #ccc);
-            color: #000;
-        }
-
-        .piece.red {
-            background: radial-gradient(circle at 30% 30%, #ff6b6b, #c0392b);
-            color: #fff;
-        }
-
-        .piece.blue {
-            background: radial-gradient(circle at 30% 30%, #74b9ff, #2980b9);
-            color: #fff;
-        }
-
-        .piece.green {
-            background: radial-gradient(circle at 30% 30%, #55efc4, #00b894);
-            color: #fff;
-        }
-
-        .piece.yellow {
-            background: radial-gradient(circle at 30% 30%, #ffeaa7, #f1c40f);
-            color: #000;
-        }
-
-        /* 按钮 */
-        .btn {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: all 0.3s ease;
-            margin: 5px;
-        }
-
-        .btn-primary {
-            background: linear-gradient(90deg, #e94560, #f39c12);
-            color: #fff;
-        }
-
-        .btn-primary:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
-        }
-
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
-        .btn-success {
-            background: #27ae60;
-            color: #fff;
-        }
-
-        .btn-danger {
-            background: #e74c3c;
-            color: #fff;
-        }
-
-        /* 聊天 */
-        .chat-box {
-            height: 200px;
-            overflow-y: auto;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-
-        .chat-message {
-            margin-bottom: 8px;
-            font-size: 0.9em;
-        }
-
-        .chat-message .name {
-            color: #f39c12;
-            font-weight: bold;
-        }
-
-        .chat-input {
-            display: flex;
             gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--glass-border);
         }
 
-        .chat-input input {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            color: #fff;
-        }
-
-        /* 状态显示 */
-        .game-status {
-            text-align: center;
-            padding: 15px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-
-        .game-status .turn {
-            font-size: 1.2em;
-            color: #f39c12;
-        }
-
-        /* 模态框 */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: #1a1a2e;
-            border-radius: 20px;
-            padding: 30px;
-            max-width: 500px;
-            width: 90%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .modal-content h2 {
-            color: #e94560;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        .color-select {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin: 20px 0;
-        }
-
-        .color-option {
-            width: 60px;
-            height: 60px;
+        .player-avatar-small {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: all 0.3s;
-        }
-
-        .color-option:hover, .color-option.selected {
-            border-color: #fff;
-            transform: scale(1.1);
-        }
-
-        /* 中国象棋棋盘 */
-        .chinese-chess-board {
-            background: #f0d9b5;
-            position: relative;
-        }
-
-        .chinese-chess-board .piece {
-            background: #f5deb3;
-            border: 2px solid #8b4513;
-            color: #8b4513;
-            border-radius: 5px;
-        }
-
-        .chinese-chess-board .piece.red {
-            color: #c0392b;
-            border-color: #c0392b;
-        }
-
-        .chinese-chess-board .piece.black {
-            color: #2c3e50;
-            border-color: #2c3e50;
-        }
-
-        /* 国际象棋棋盘 */
-        .chess-board {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-        }
-
-        .chess-board .cell {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2em;
-        }
-
-        .chess-board .cell.light {
-            background: #f0d9b5;
-        }
-
-        .chess-board .cell.dark {
-            background: #b58863;
-        }
-
-        /* 黑白棋 */
-        .othello-board {
-            background: #2d5016;
-        }
-
-        /* 跳棋棋盘 */
-        .checkers-board {
-            display: grid;
-            grid-template-columns: repeat(8, 1fr);
-        }
-
-        .checkers-board .cell {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .checkers-board .cell.light {
-            background: #f5deb3;
-        }
-
-        .checkers-board .cell.dark {
-            background: #8b4513;
-        }
-
-        /* 飞行棋 */
-        .flight-chess-board {
-            position: relative;
-            width: 500px;
-            height: 500px;
-            background: #fff;
-            border-radius: 10px;
-        }
-
-        .flight-zone {
-            position: absolute;
-            width: 150px;
-            height: 150px;
-            border-radius: 10px;
-            display: flex;
-            flex-wrap: wrap;
-            padding: 10px;
-            gap: 5px;
-        }
-
-        .flight-zone.red { top: 0; left: 0; background: #ffcccc; }
-        .flight-zone.blue { top: 0; right: 0; background: #ccccff; }
-        .flight-zone.yellow { bottom: 0; left: 0; background: #ffffcc; }
-        .flight-zone.green { bottom: 0; right: 0; background: #ccffcc; }
-
-        .flight-plane {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--neon-purple));
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 14px;
-            cursor: pointer;
         }
 
-        /* 骰子 */
-        .dice-container {
-            text-align: center;
-            margin: 20px 0;
+        .player-name-small {
+            font-size: 13px;
         }
 
-        .dice {
-            width: 80px;
-            height: 80px;
-            background: #fff;
-            border-radius: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5em;
-            color: #333;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            cursor: pointer;
-            transition: transform 0.3s;
-        }
-
-        .dice:hover {
-            transform: scale(1.1);
-        }
-
-        .dice.rolling {
-            animation: roll 0.5s ease-in-out;
-        }
-
-        @keyframes roll {
-            0%, 100% { transform: rotate(0deg); }
-            25% { transform: rotate(90deg); }
-            50% { transform: rotate(180deg); }
-            75% { transform: rotate(270deg); }
-        }
-
-        /* 响应式 - 移动端优化 */
-        @media (max-width: 900px) {
-            .room-container {
-                grid-template-columns: 1fr;
-            }
-            
-            header h1 {
-                font-size: 1.5em;
-            }
-            
-            header p {
-                font-size: 0.85em;
-            }
-            
-            .game-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 10px;
-            }
-            
-            .game-card {
-                padding: 15px;
-            }
-            
-            .game-card .icon {
-                font-size: 2em;
-            }
-            
-            .game-card h3 {
-                font-size: 1em;
-            }
-            
-            .game-card p {
-                font-size: 0.75em;
-            }
-            
-            .login-box {
-                padding: 25px;
-                margin: 10px;
-            }
-            
-            .btn {
-                padding: 10px 15px;
-                font-size: 14px;
-            }
-            
-            .sidebar {
-                order: -1;
-                margin-bottom: 15px;
-            }
-            
-            .chat-box {
-                height: 120px;
-            }
-            
-            .room-code {
-                font-size: 1.5em;
-            }
-            
-            .board {
-                transform-origin: center top;
-                max-width: 100%;
-            }
-            
-            .flight-chess-board {
-                width: 100%;
-                max-width: 350px;
-                height: 350px;
-            }
-            
-            .flight-zone {
-                width: 100px;
-                height: 100px;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .game-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .container {
-                padding: 10px;
-            }
-            
-            header {
-                padding: 15px 0;
-            }
-        }
-
-        /* 加载动画 */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #fff;
-            border-radius: 50%;
-            border-top-color: transparent;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* 胜利动画 */
-        .winner-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            flex-direction: column;
-        }
-
-        .winner-overlay.active {
-            display: flex;
-        }
-
-        .winner-text {
-            font-size: 3em;
-            color: #f39c12;
-            animation: pulse 1s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-        }
-
-        /* 语言选择界面 */
-        #lang-screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 80vh;
-        }
-
-        .lang-title {
-            font-size: 1.8em;
-            color: #f39c12;
+        .chat-box {
+            height: 100px;
+            overflow-y: auto;
+            font-size: 12px;
             margin-bottom: 10px;
-            text-align: center;
         }
 
-        .lang-subtitle {
-            color: #888;
-            margin-bottom: 30px;
-            text-align: center;
+        .chat-input-group {
+            display: flex;
+            gap: 8px;
         }
 
-        .lang-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            width: 100%;
-            max-width: 420px;
+        .chat-input {
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 13px;
         }
 
-        .lang-card {
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 15px 12px;
-            text-align: center;
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .ai-level {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .ai-btn {
+            padding: 8px 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-size: 13px;
             cursor: pointer;
             transition: all 0.3s ease;
-            user-select: none;
-            -webkit-user-select: none;
         }
 
-        .lang-card:hover {
-            background: rgba(255, 255, 255, 0.15);
-            border-color: #f39c12;
-            transform: translateY(-2px);
+        .ai-btn:hover, .ai-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
         }
 
-        .lang-card.selected {
-            background: rgba(233, 69, 96, 0.2);
-            border-color: #e94560;
-            box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+        .profile-header {
+            text-align: center;
+            padding: 40px 20px;
         }
 
-        .lang-card .lang-flag {
-            font-size: 2em;
-            margin-bottom: 6px;
-        }
-
-        .lang-card .lang-name {
-            font-size: 1em;
-            color: #fff;
-            font-weight: bold;
-        }
-
-        .lang-card .lang-native {
-            font-size: 0.8em;
-            color: #aaa;
-            margin-top: 3px;
-        }
-
-        /* 小篆字体 */
-        @font-face {
-            font-family: 'XiaoZhuan';
-            src: local('STZhongsong'), local('SimSun'), local('FangSong');
-        }
-
-        .font-xiaozhuan {
-            font-family: 'XiaoZhuan', 'STZhongsong', 'FangSong', serif;
-            letter-spacing: 2px;
-        }
-
-        /* 泰语字体 */
-        @font-face {
-            font-family: 'ThaiFont';
-            src: local('Noto Sans Thai'), local('Tahoma'), local('Angsana New');
-        }
-
-        .font-thai {
-            font-family: 'ThaiFont', 'Noto Sans Thai', 'Tahoma', sans-serif;
-        }
-
-        /* 越南语字体 */
-        .font-vietnamese {
-            font-family: 'Noto Sans', 'Segoe UI', sans-serif;
-        }
-
-        /* 翻译按钮 */
-        .translate-btn {
-            display: inline-flex;
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            display: flex;
             align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            background: linear-gradient(90deg, #3498db, #2ecc71);
-            border: none;
-            border-radius: 15px;
-            color: #fff;
-            font-size: 0.75em;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-top: 4px;
+            justify-content: center;
+            font-size: 48px;
+            margin: 0 auto 20px;
+            border: 4px solid var(--glass-border);
+            box-shadow: 0 0 30px var(--accent-glow);
         }
 
-        .translate-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 10px rgba(52, 152, 219, 0.4);
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
         }
 
-        .translated-text {
-            background: rgba(52, 152, 219, 0.15);
-            border-left: 3px solid #3498db;
-            padding: 6px 10px;
-            margin-top: 6px;
-            border-radius: 0 8px 8px 0;
-            font-size: 0.85em;
-            color: #74b9ff;
+        .profile-email {
+            color: var(--text-secondary);
+            font-size: 14px;
         }
 
-        /* 长按提示 */
-        .long-press-hint {
-            color: #666;
-            font-size: 0.7em;
-            margin-top: 2px;
-            font-style: italic;
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
         }
 
-        /* 语言切换按钮（顶部栏） */
-        .lang-switch-bar {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            z-index: 500;
+        .stat-card {
+            background: var(--glass-bg);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid var(--glass-border);
         }
 
-        .lang-switch-btn {
-            padding: 6px 12px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+        }
+
+        .win-rate-chart {
+            background: var(--glass-bg);
             border-radius: 20px;
-            color: #fff;
-            font-size: 0.85em;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .pie-chart {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--success) 0deg var(--win-angle, 126deg),
+                var(--accent-primary) var(--win-angle, 126deg) 360deg
+            );
+            position: relative;
+        }
+
+        .pie-chart::after {
+            content: attr(data-rate);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .chart-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .legend-color.win { background: var(--success); }
+        .legend-color.loss { background: var(--accent-primary); }
+
+        .game-stats-list {
+            background: var(--glass-bg);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .game-stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .game-stat-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .game-stat-icon {
+            font-size: 24px;
+        }
+
+        .game-stat-name {
+            font-size: 15px;
+        }
+
+        .game-stat-rate {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-secondary);
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #ff4757, #ff6348);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            margin-bottom: 100px;
         }
 
-        .lang-switch-btn:hover {
-            background: rgba(233, 69, 96, 0.5);
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4);
         }
 
-        /* 翻译模态框 */
-        .translate-modal {
-            display: none;
+        .modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            justify-content: center;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            display: none;
             align-items: center;
-            z-index: 3000;
-        }
-
-        .translate-modal.active {
-            display: flex;
-        }
-
-        .translate-modal-content {
-            background: #1a1a2e;
-            border-radius: 20px;
-            padding: 25px;
-            max-width: 400px;
-            width: 90%;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .translate-modal-content h3 {
-            color: #3498db;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-
-        .translate-original {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            color: #ccc;
-            word-break: break-word;
-        }
-
-        .translate-result {
-            background: rgba(52, 152, 219, 0.1);
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            min-height: 50px;
-            color: #74b9ff;
-            word-break: break-word;
-        }
-
-        .translate-loading {
-            text-align: center;
-            color: #888;
+            justify-content: center;
+            z-index: 1000;
             padding: 20px;
         }
 
-        @media (max-width: 900px) {
-            .lang-grid {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-                max-width: 350px;
-            }
-
-            .lang-card {
-                padding: 12px 8px;
-            }
-
-            .lang-card .lang-flag {
-                font-size: 1.6em;
-            }
-
-            .lang-card .lang-name {
-                font-size: 0.9em;
-            }
-
-            .lang-title {
-                font-size: 1.4em;
-            }
+        .modal-overlay.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
         }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            padding: 30px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid var(--glass-border);
+            animation: scaleIn 0.3s ease;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .modal-message {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-buttons .btn {
+            flex: 1;
+        }
+
+        @media (min-width: 768px) {
+            .country-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+            .games-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+            .sidebar { grid-template-columns: repeat(3, 1fr); }
+        }
+
+        @media (min-width: 1024px) {
+            .game-room { flex-direction: row; gap: 20px; }
+            .game-area { flex: 2; margin-bottom: 0; }
+            .sidebar { flex: 1; grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        @media (max-width: 480px) {
+            .page { padding: 15px; }
+            .splash-title { font-size: 24px; }
+            .games-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+            .game-card { padding: 15px; }
+            .game-icon { font-size: 36px; }
+            .sidebar { grid-template-columns: 1fr; }
+            .nav-item { padding: 8px 15px; }
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <!-- 语言切换按钮 -->
-    <div class="lang-switch-bar" id="lang-switch-bar" style="display: none;">
-        <button class="lang-switch-btn" onclick="showLangScreen()">🌐 <span id="current-lang-label">中文简体</span></button>
-    </div>
 
-    <div class="container">
-        <header>
-            <h1 data-i18n="title">🎮 棋类游戏平台</h1>
-            <p data-i18n="subtitle">五子棋 · 围棋 · 中国象棋 · 国际象棋 · 跳棋 · 黑白棋 · 飞行棋</p>
-        </header>
-
-        <!-- 语言选择界面 -->
-        <div id="lang-screen">
-            <div class="lang-title" data-i18n="lang_title">🌐 选择语言 / Select Language</div>
-            <div class="lang-subtitle" data-i18n="lang_subtitle">Choose your preferred language</div>
-            
-            <div class="lang-grid" id="lang-grid">
-                <div class="lang-card" onclick="selectLanguage('zh-CN')" data-lang="zh-CN">
-                    <div class="lang-flag">🇨🇳</div>
-                    <div class="lang-name">中文简体</div>
-                    <div class="lang-native">简体中文</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('zh-TW')" data-lang="zh-TW">
-                    <div class="lang-flag">🇹🇼</div>
-                    <div class="lang-name">中文繁體</div>
-                    <div class="lang-native">繁體中文</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('zh-CL')" data-lang="zh-CL">
-                    <div class="lang-flag">📜</div>
-                    <div class="lang-name">文言文</div>
-                    <div class="lang-native">古文雅言</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('zh-XZ')" data-lang="zh-XZ">
-                    <div class="lang-flag">🖊️</div>
-                    <div class="lang-name">中文小篆</div>
-                    <div class="lang-native">篆書體</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('vi')" data-lang="vi">
-                    <div class="lang-flag">🇻🇳</div>
-                    <div class="lang-name">越南语</div>
-                    <div class="lang-native">Tiếng Việt</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('en')" data-lang="en">
-                    <div class="lang-flag">🇬🇧</div>
-                    <div class="lang-name">English</div>
-                    <div class="lang-native">English</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('fr')" data-lang="fr">
-                    <div class="lang-flag">🇫🇷</div>
-                    <div class="lang-name">Français</div>
-                    <div class="lang-native">Français</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('it')" data-lang="it">
-                    <div class="lang-flag">🇮🇹</div>
-                    <div class="lang-name">Italiano</div>
-                    <div class="lang-native">Italiano</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('haw')" data-lang="haw">
-                    <div class="lang-flag">🌺</div>
-                    <div class="lang-name">夏威夷语</div>
-                    <div class="lang-native">ʻŌlelo Hawaiʻi</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('th')" data-lang="th">
-                    <div class="lang-flag">🇹🇭</div>
-                    <div class="lang-name">泰国语</div>
-                    <div class="lang-native">ไทย</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('ja')" data-lang="ja">
-                    <div class="lang-flag">🇯🇵</div>
-                    <div class="lang-name">日本語</div>
-                    <div class="lang-native">日本語</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('ko')" data-lang="ko">
-                    <div class="lang-flag">🇰🇷</div>
-                    <div class="lang-name">한국어</div>
-                    <div class="lang-native">한국어</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('de')" data-lang="de">
-                    <div class="lang-flag">🇩🇪</div>
-                    <div class="lang-name">Deutsch</div>
-                    <div class="lang-native">Deutsch</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('es')" data-lang="es">
-                    <div class="lang-flag">🇪🇸</div>
-                    <div class="lang-name">Español</div>
-                    <div class="lang-native">Español</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('pt')" data-lang="pt">
-                    <div class="lang-flag">🇧🇷</div>
-                    <div class="lang-name">Português</div>
-                    <div class="lang-native">Português</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('ru')" data-lang="ru">
-                    <div class="lang-flag">🇷🇺</div>
-                    <div class="lang-name">Русский</div>
-                    <div class="lang-native">Русский</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('ar')" data-lang="ar">
-                    <div class="lang-flag">🇸🇦</div>
-                    <div class="lang-name">العربية</div>
-                    <div class="lang-native">العربية</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('hi')" data-lang="hi">
-                    <div class="lang-flag">🇮🇳</div>
-                    <div class="lang-name">हिन्दी</div>
-                    <div class="lang-native">हिन्दी</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('bn')" data-lang="bn">
-                    <div class="lang-flag">🇧🇩</div>
-                    <div class="lang-name">বাংলা</div>
-                    <div class="lang-native">বাংলা</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('tr')" data-lang="tr">
-                    <div class="lang-flag">🇹🇷</div>
-                    <div class="lang-name">Türkçe</div>
-                    <div class="lang-native">Türkçe</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('pl')" data-lang="pl">
-                    <div class="lang-flag">🇵🇱</div>
-                    <div class="lang-name">Polski</div>
-                    <div class="lang-native">Polski</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('nl')" data-lang="nl">
-                    <div class="lang-flag">🇳🇱</div>
-                    <div class="lang-name">Nederlands</div>
-                    <div class="lang-native">Nederlands</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('sv')" data-lang="sv">
-                    <div class="lang-flag">🇸🇪</div>
-                    <div class="lang-name">Svenska</div>
-                    <div class="lang-native">Svenska</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('da')" data-lang="da">
-                    <div class="lang-flag">🇩🇰</div>
-                    <div class="lang-name">Dansk</div>
-                    <div class="lang-native">Dansk</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('fi')" data-lang="fi">
-                    <div class="lang-flag">🇫🇮</div>
-                    <div class="lang-name">Suomi</div>
-                    <div class="lang-native">Suomi</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('no')" data-lang="no">
-                    <div class="lang-flag">🇳🇴</div>
-                    <div class="lang-name">Norsk</div>
-                    <div class="lang-native">Norsk</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('el')" data-lang="el">
-                    <div class="lang-flag">🇬🇷</div>
-                    <div class="lang-name">Ελληνικά</div>
-                    <div class="lang-native">Ελληνικά</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('he')" data-lang="he">
-                    <div class="lang-flag">🇮🇱</div>
-                    <div class="lang-name">עברית</div>
-                    <div class="lang-native">עברית</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('id')" data-lang="id">
-                    <div class="lang-flag">🇮🇩</div>
-                    <div class="lang-name">Bahasa Indonesia</div>
-                    <div class="lang-native">Bahasa Indonesia</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('ms')" data-lang="ms">
-                    <div class="lang-flag">🇲🇾</div>
-                    <div class="lang-name">Bahasa Melayu</div>
-                    <div class="lang-native">Bahasa Melayu</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('tl')" data-lang="tl">
-                    <div class="lang-flag">🇵🇭</div>
-                    <div class="lang-name">Filipino</div>
-                    <div class="lang-native">Filipino</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('uk')" data-lang="uk">
-                    <div class="lang-flag">🇺🇦</div>
-                    <div class="lang-name">Українська</div>
-                    <div class="lang-native">Українська</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('cs')" data-lang="cs">
-                    <div class="lang-flag">🇨🇿</div>
-                    <div class="lang-name">Čeština</div>
-                    <div class="lang-native">Čeština</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('ro')" data-lang="ro">
-                    <div class="lang-flag">🇷🇴</div>
-                    <div class="lang-name">Română</div>
-                    <div class="lang-native">Română</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('hu')" data-lang="hu">
-                    <div class="lang-flag">🇭🇺</div>
-                    <div class="lang-name">Magyar</div>
-                    <div class="lang-native">Magyar</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('sr')" data-lang="sr">
-                    <div class="lang-flag">🇷🇸</div>
-                    <div class="lang-name">Српски</div>
-                    <div class="lang-native">Српски</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('bg')" data-lang="bg">
-                    <div class="lang-flag">🇧🇬</div>
-                    <div class="lang-name">Български</div>
-                    <div class="lang-native">Български</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('ca')" data-lang="ca">
-                    <div class="lang-flag">🇪🇸</div>
-                    <div class="lang-name">Català</div>
-                    <div class="lang-native">Català</div>
-                </div>
-                <div class="lang-card" onclick="selectLanguage('sw')" data-lang="sw">
-                    <div class="lang-flag">🇰🇪</div>
-                    <div class="lang-name">Kiswahili</div>
-                    <div class="lang-native">Kiswahili</div>
-                </div>
-            </div>
-            
-            <button class="btn btn-primary" style="margin-top: 30px; width: 100%; max-width: 420px;" onclick="confirmLanguage()" data-i18n="lang_confirm">确认选择</button>
-        </div>
-
-        <!-- 登录界面 -->
-        <div id="login-screen">
-            <div class="login-box">
-                <h2 data-i18n="login_welcome">欢迎来到棋类游戏平台</h2>
-                <div class="input-group">
-                    <label data-i18n="login_nickname">你的昵称</label>
-                    <input type="text" id="player-name" data-i18n-placeholder="login_nickname_hint" placeholder="请输入昵称" maxlength="12">
-                </div>
-                <button class="btn btn-primary" style="width: 100%;" onclick="joinGame()" data-i18n="login_enter">进入游戏大厅</button>
-                
-                <div style="margin-top: 20px; text-align: center;">
-                    <p style="color: #888; margin-bottom: 10px;" data-i18n="login_or">或者</p>
-                    <div class="input-group">
-                        <label data-i18n="login_room_code">输入房间码加入游戏</label>
-                        <input type="text" id="join-room-code" data-i18n-placeholder="login_room_code_hint" placeholder="6位房间码" maxlength="6" style="text-transform: uppercase;">
-                    </div>
-                    <button class="btn btn-secondary" style="width: 100%;" onclick="joinRoomDirect()" data-i18n="login_join_room">加入房间</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 游戏大厅 -->
-        <div id="lobby">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <span id="welcome-text" style="color: #f39c12;"></span>
-                <button class="btn btn-secondary" onclick="showJoinModal()" style="margin-left: 20px;">加入房间</button>
-            </div>
-            
-            <h2 style="color: #f39c12; margin-bottom: 10px;">选择游戏</h2>
-            <p style="color: #888; margin-bottom: 20px;">点击创建房间，邀请朋友一起玩</p>
-            
-            <div class="game-grid">
-                <div class="game-card">
-                    <div class="icon">⚫</div>
-                    <h3>五子棋</h3>
-                    <p>经典五子连珠，先连成五子获胜</p>
-                    <button class="start-btn" onclick="createRoom('gomoku')">🎮 开始游戏</button>
-                </div>
-                
-                <div class="game-card">
-                    <div class="icon">⬛</div>
-                    <h3>围棋</h3>
-                    <p>黑白对弈，围地多者胜</p>
-                    <button class="start-btn" onclick="createRoom('go')">🎮 开始游戏</button>
-                </div>
-                
-                <div class="game-card">
-                    <div class="icon">將</div>
-                    <h3>中国象棋</h3>
-                    <p>楚河汉界，将死对方为胜</p>
-                    <button class="start-btn" onclick="createRoom('chineseChess')">🎮 开始游戏</button>
-                </div>
-                
-                <div class="game-card">
-                    <div class="icon">♔</div>
-                    <h3>国际象棋</h3>
-                    <p>经典国际象棋，将死对方国王</p>
-                    <button class="start-btn" onclick="createRoom('chess')">🎮 开始游戏</button>
-                </div>
-                
-                <div class="game-card">
-                    <div class="icon">🔴</div>
-                    <h3>跳棋</h3>
-                    <p>跳吃对方棋子，消灭对手获胜</p>
-                    <button class="start-btn" onclick="createRoom('checkers')">🎮 开始游戏</button>
-                </div>
-                
-                <div class="game-card">
-                    <div class="icon">⚪</div>
-                    <h3>黑白棋</h3>
-                    <p>翻转对手棋子，棋子多者胜</p>
-                    <button class="start-btn" onclick="createRoom('othello')">🎮 开始游戏</button>
-                </div>
-                
-                <div class="game-card">
-                    <div class="icon">✈️</div>
-                    <h3>飞行棋</h3>
-                    <p>掷骰子前进，先到终点获胜</p>
-                    <button class="start-btn" onclick="createRoom('flightChess')">🎮 开始游戏</button>
-                </div>
-                <div class="game-card">
-                    <div class="icon">🃏</div>
-                    <h3 data-i18n="game_poker">扑克牌</h3>
-                    <p data-i18n="game_poker_desc">21点对战，最接近21点获胜</p>
-                    <button class="start-btn" onclick="createRoom('poker')">🎮 开始游戏</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- 游戏房间 -->
-        <div id="room-screen">
-            <div class="room-container">
-                <div class="game-area">
-                    <div class="game-status">
-                        <div class="turn" id="game-turn">等待玩家加入...</div>
-                    </div>
-                    <div class="board-container" id="board-container">
-                        <!-- 棋盘将在这里动态生成 -->
-                    </div>
-                </div>
-                
-                <div class="sidebar">
-                    <div class="room-info">
-                        <h3>房间码</h3>
-                        <div class="room-code" id="room-code-display">------</div>
-                    </div>
-                    
-                    <div class="player-list" id="player-list">
-                        <!-- 玩家列表 -->
-                    </div>
-                    
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <button class="btn btn-success" id="ready-btn" onclick="toggleReady()">准备</button>
-                        <button class="btn btn-danger" onclick="leaveRoom()">离开房间</button>
-                    </div>
-                    
-                    <div id="ai-options" style="display: none; margin-bottom: 20px;">
-                        <h4 style="color: #f39c12; margin-bottom: 10px;">AI对战设置</h4>
-                        <div class="color-select">
-                            <div class="color-option black selected" onclick="selectAIColor('black')" title="执黑"></div>
-                            <div class="color-option white" onclick="selectAIColor('white')" title="执白"></div>
-                        </div>
-                        <button class="btn btn-primary" style="width: 100%;" onclick="startAIGame()">开始AI对战</button>
-                    </div>
-                    
-                    <div class="chat-box" id="chat-box"></div>
-                    <div class="chat-input">
-                        <input type="text" id="chat-input" placeholder="输入消息..." onkeypress="handleChatKeypress(event)">
-                        <button class="btn btn-primary" onclick="sendChat()">发送</button>
-                    </div>
-                </div>
-            </div>
+    <!-- 启动页 -->
+    <div id="splash-screen" class="page active">
+        <div class="splash-logo">♟️</div>
+        <h1 class="splash-title">棋类游戏平台</h1>
+        <p class="splash-subtitle">与全球玩家一起对弈</p>
+        <div class="splash-progress">
+            <div class="splash-progress-bar" id="progress-bar"></div>
         </div>
     </div>
 
-    <!-- 加入房间模态框 -->
-    <div class="modal" id="join-modal">
-        <div class="modal-content">
-            <h2>加入房间</h2>
+    <!-- 语言选择页 -->
+    <div id="language-page" class="page">
+        <h2 class="page-title">选择您的语言</h2>
+        <input type="text" class="search-box" id="country-search" placeholder="搜索国家..." oninput="filterCountries()">
+        <div class="country-grid" id="country-grid"></div>
+        <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="confirmLanguage()" id="confirm-lang-btn" disabled>确认选择</button>
+    </div>
+
+    <!-- 登录页 -->
+    <div id="login-page" class="page">
+        <div class="login-container">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <div style="font-size: 64px; margin-bottom: 20px;">♟️</div>
+                <h2 style="font-size: 28px; margin-bottom: 10px;">欢迎回来</h2>
+                <p style="color: var(--text-secondary);">登录以继续游戏</p>
+            </div>
             <div class="input-group">
-                <label>房间码</label>
-                <input type="text" id="modal-room-code" placeholder="请输入6位房间码" maxlength="6" style="text-transform: uppercase;">
+                <label class="input-label">QQ邮箱</label>
+                <input type="email" class="input-field" id="login-email" placeholder="请输入QQ邮箱">
             </div>
-            <div style="text-align: center;">
-                <button class="btn btn-primary" onclick="joinRoomFromModal()">加入</button>
-                <button class="btn btn-secondary" onclick="closeJoinModal()">取消</button>
+            <div class="input-group">
+                <label class="input-label">密码</label>
+                <input type="password" class="input-field" id="login-password" placeholder="请输入密码">
+            </div>
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="handleLogin()">登录</button>
+            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 15px;" onclick="switchPage('register-page')">注册账号</button>
+            <button class="btn btn-guest" style="width: 100%;" onclick="handleGuestLogin()">游客登录</button>
+        </div>
+    </div>
+
+    <!-- 注册页 -->
+    <div id="register-page" class="page">
+        <div class="login-container">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <div style="font-size: 64px; margin-bottom: 20px;">📝</div>
+                <h2 style="font-size: 28px; margin-bottom: 10px;">注册账号</h2>
+                <p style="color: var(--text-secondary);">创建您的新账号</p>
+            </div>
+            <div class="input-group">
+                <label class="input-label">QQ邮箱</label>
+                <input type="email" class="input-field" id="register-email" placeholder="请输入QQ邮箱">
+            </div>
+            <div class="input-group">
+                <label class="input-label">昵称</label>
+                <input type="text" class="input-field" id="register-nickname" placeholder="请输入昵称">
+            </div>
+            <div class="input-group">
+                <label class="input-label">密码</label>
+                <input type="password" class="input-field" id="register-password" placeholder="请输入密码（至少6位）">
+            </div>
+            <div class="input-group">
+                <label class="input-label">确认密码</label>
+                <input type="password" class="input-field" id="register-confirm" placeholder="请再次输入密码">
+            </div>
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="handleRegister()">注册</button>
+            <button class="btn btn-guest" style="width: 100%;" onclick="switchPage('login-page')">返回登录</button>
+        </div>
+    </div>
+
+    <!-- 主页 -->
+    <div id="home-page" class="page">
+        <div class="user-header" onclick="switchPage('profile-page')" style="cursor: pointer;">
+            <div class="user-avatar" id="user-avatar">👤</div>
+            <div class="user-info">
+                <div class="user-name" id="user-name">玩家</div>
+                <div class="user-stats">胜率: <span id="win-rate">0%</span> | 总局数: <span id="total-games">0</span></div>
+            </div>
+        </div>
+        <h3 style="margin-bottom: 15px; font-size: 18px;">棋牌游戏</h3>
+        <div class="games-grid" id="games-grid">
+            <div class="game-card" onclick="enterGame('chess')">
+                <div class="game-icon">♟️</div>
+                <div class="game-name">国际象棋</div>
+                <div class="game-players">1.2万人在线</div>
+            </div>
+            <div class="game-card" onclick="enterGame('go')">
+                <div class="game-icon">⚫</div>
+                <div class="game-name">围棋</div>
+                <div class="game-players">8千人在线</div>
+            </div>
+            <div class="game-card" onclick="enterGame('chineseChess')">
+                <div class="game-icon">🀄</div>
+                <div class="game-name">中国象棋</div>
+                <div class="game-players">1.5万人在线</div>
+            </div>
+            <div class="game-card" onclick="enterGame('gomoku')">
+                <div class="game-icon">⚪</div>
+                <div class="game-name">五子棋</div>
+                <div class="game-players">2万人在线</div>
+            </div>
+            <div class="game-card" onclick="enterGame('othello')">
+                <div class="game-icon">🔘</div>
+                <div class="game-name">黑白棋</div>
+                <div class="game-players">5千人在线</div>
+            </div>
+            <div class="game-card" onclick="enterGame('checkers')">
+                <div class="game-icon">🔴</div>
+                <div class="game-name">跳棋</div>
+                <div class="game-players">3千人在线</div>
+            </div>
+            <div class="game-card" onclick="enterGame('flightChess')">
+                <div class="game-icon">✈️</div>
+                <div class="game-name">飞行棋</div>
+                <div class="game-players">3千人在线</div>
+            </div>
+        </div>
+        
+        <h3 style="margin: 25px 0 15px; font-size: 18px;">扑克游戏</h3>
+        <div class="games-grid">
+            <div class="game-card" onclick="enterGame('poker')">
+                <div class="game-icon">🃏</div>
+                <div class="game-name">21点</div>
+                <div class="game-players">8千人在线</div>
+            </div>
+            <div class="game-card" onclick="enterGame('texasHoldem')">
+                <div class="game-icon">🎰</div>
+                <div class="game-name">德州扑克</div>
+                <div class="game-players">1.2万人在线</div>
+            </div>
+            <div class="game-card" onclick="enterGame('zhaJinHua')">
+                <div class="game-icon">🌸</div>
+                <div class="game-name">炸金花</div>
+                <div class="game-players">6千人在线</div>
+            </div>
+            <div class="game-card" onclick="enterGame('douDiZhu')">
+                <div class="game-icon">👲</div>
+                <div class="game-name">斗地主</div>
+                <div class="game-players">2万人在线</div>
             </div>
         </div>
     </div>
 
-    <!-- 胜利提示 -->
-    <div class="winner-overlay" id="winner-overlay">
-        <div class="winner-text" id="winner-text">🎉 红方获胜！</div>
-        <button class="btn btn-primary" style="margin-top: 30px;" onclick="restartGame()">再来一局</button>
-        <button class="btn btn-secondary" style="margin-top: 10px;" onclick="backToLobby()">返回大厅</button>
-    </div>
-
-    <!-- 翻译模态框 -->
-    <div class="translate-modal" id="translate-modal">
-        <div class="translate-modal-content">
-            <h3 data-i18n="translate_title">🔄 翻译消息</h3>
-            <div class="translate-original" id="translate-original"></div>
-            <div class="translate-result" id="translate-result">
-                <div class="translate-loading" data-i18n="translate_loading">翻译中...</div>
+    <!-- 游戏房间页 -->
+    <div id="game-room-page" class="page">
+        <div class="game-room">
+            <div class="room-header">
+                <button class="btn btn-secondary" onclick="leaveRoom()">← 返回</button>
+                <div class="room-code">房间号: <span id="room-code">A1B2C3</span></div>
             </div>
-            <div style="text-align: center;">
-                <button class="btn btn-primary" onclick="closeTranslateModal()" data-i18n="translate_close">关闭</button>
+            <div class="game-area">
+                <div class="game-board-placeholder">
+                    <span class="icon" id="current-game-icon">♟️</span>
+                    <p>游戏区域</p>
+                    <p style="font-size: 13px; margin-top: 10px;">等待其他玩家加入...</p>
+                </div>
+            </div>
+            <div class="sidebar">
+                <div class="sidebar-section">
+                    <div class="sidebar-title">玩家列表</div>
+                    <div class="player-list" id="player-list">
+                        <div class="player-item">
+                            <div class="player-avatar-small">👤</div>
+                            <span class="player-name-small">玩家1 (你)</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="sidebar-section">
+                    <div class="sidebar-title">聊天</div>
+                    <div class="chat-box" id="chat-box">
+                        <div style="color: var(--text-muted); margin-bottom: 5px;">系统: 欢迎来到游戏房间!</div>
+                    </div>
+                    <div class="chat-input-group">
+                        <input type="text" class="chat-input" id="chat-input" placeholder="输入消息...">
+                        <button class="btn btn-primary" style="padding: 8px 16px;" onclick="sendChat()">发送</button>
+                    </div>
+                </div>
+                <div class="sidebar-section" style="grid-column: 1 / -1;">
+                    <div class="sidebar-title">AI难度</div>
+                    <div class="ai-level">
+                        <button class="ai-btn active" onclick="selectAI(this, 'easy')">简单</button>
+                        <button class="ai-btn" onclick="selectAI(this, 'medium')">中等</button>
+                        <button class="ai-btn" onclick="selectAI(this, 'hard')">困难</button>
+                        <button class="ai-btn" onclick="selectAI(this, 'expert')">专家</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <script src="i18n.js"></script>
-    <script src="game.js"></script>
+    <!-- 我的信息页 -->
+    <div id="profile-page" class="page">
+        <div class="profile-header">
+            <div class="profile-avatar" id="profile-avatar">👤</div>
+            <div class="profile-name" id="profile-name">玩家</div>
+            <div class="profile-email" id="profile-email">guest@example.com</div>
+        </div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="stat-total">0</div>
+                <div class="stat-label">总局数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-wins">0</div>
+                <div class="stat-label">胜场</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-losses">0</div>
+                <div class="stat-label">败场</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="stat-draws">0</div>
+                <div class="stat-label">平局</div>
+            </div>
+        </div>
+        <div class="win-rate-chart">
+            <div class="chart-title">胜率统计</div>
+            <div class="pie-chart" id="win-rate-pie" data-rate="0%" style="--win-angle: 0deg;"></div>
+            <div class="chart-legend">
+                <div class="legend-item">
+                    <div class="legend-color win"></div>
+                    <span>胜利</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color loss"></div>
+                    <span>失败</span>
+                </div>
+            </div>
+        </div>
+        <div class="game-stats-list">
+            <div style="font-size: 16px; font-weight: 600; margin-bottom: 15px;">各游戏胜率</div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">♟️</span>
+                    <span class="game-stat-name">国际象棋</span>
+                </div>
+                <span class="game-stat-rate" id="rate-chess">0%</span>
+            </div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">⚫</span>
+                    <span class="game-stat-name">围棋</span>
+                </div>
+                <span class="game-stat-rate" id="rate-go">0%</span>
+            </div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">🀄</span>
+                    <span class="game-stat-name">中国象棋</span>
+                </div>
+                <span class="game-stat-rate" id="rate-chinese-chess">0%</span>
+            </div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">⚪</span>
+                    <span class="game-stat-name">五子棋</span>
+                </div>
+                <span class="game-stat-rate" id="rate-gomoku">0%</span>
+            </div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">🔘</span>
+                    <span class="game-stat-name">黑白棋</span>
+                </div>
+                <span class="game-stat-rate" id="rate-othello">0%</span>
+            </div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">🔴</span>
+                    <span class="game-stat-name">跳棋</span>
+                </div>
+                <span class="game-stat-rate" id="rate-checkers">0%</span>
+            </div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">✈️</span>
+                    <span class="game-stat-name">飞行棋</span>
+                </div>
+                <span class="game-stat-rate" id="rate-flightChess">0%</span>
+            </div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">🃏</span>
+                    <span class="game-stat-name">21点</span>
+                </div>
+                <span class="game-stat-rate" id="rate-poker">0%</span>
+            </div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">🎰</span>
+                    <span class="game-stat-name">德州扑克</span>
+                </div>
+                <span class="game-stat-rate" id="rate-texasHoldem">0%</span>
+            </div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">🌸</span>
+                    <span class="game-stat-name">炸金花</span>
+                </div>
+                <span class="game-stat-rate" id="rate-zhaJinHua">0%</span>
+            </div>
+            <div class="game-stat-item">
+                <div class="game-stat-info">
+                    <span class="game-stat-icon">👲</span>
+                    <span class="game-stat-name">斗地主</span>
+                </div>
+                <span class="game-stat-rate" id="rate-douDiZhu">0%</span>
+            </div>
+        </div>
+        <button class="logout-btn" onclick="handleLogout()">退出登录</button>
+    </div>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav" id="bottom-nav" style="display: none;">
+        <div class="nav-item active" onclick="switchTab('home')">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">首页</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('rank')">
+            <span class="nav-icon">🏆</span>
+            <span class="nav-label">排行</span>
+        </div>
+        <div class="nav-item" onclick="switchTab('profile')">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">我的</span>
+        </div>
+    </nav>
+
+    <!-- 模态框 -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modal-title">提示</h3>
+            <p id="modal-message">消息内容</p>
+            <div class="modal-buttons">
+                <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="confirmModal()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 国家数据
+        const countries = [
+            {code:'CN',name:'中国',flag:'🇨🇳'},{code:'US',name:'美国',flag:'🇺🇸'},{code:'JP',name:'日本',flag:'🇯🇵'},{code:'KR',name:'韩国',flag:'🇰🇷'},
+            {code:'GB',name:'英国',flag:'🇬🇧'},{code:'FR',name:'法国',flag:'🇫🇷'},{code:'DE',name:'德国',flag:'🇩🇪'},{code:'IT',name:'意大利',flag:'🇮🇹'},
+            {code:'ES',name:'西班牙',flag:'🇪🇸'},{code:'RU',name:'俄罗斯',flag:'🇷🇺'},{code:'CA',name:'加拿大',flag:'🇨🇦'},{code:'AU',name:'澳大利亚',flag:'🇦🇺'},
+            {code:'BR',name:'巴西',flag:'🇧🇷'},{code:'IN',name:'印度',flag:'🇮🇳'},{code:'MX',name:'墨西哥',flag:'🇲🇽'},{code:'ID',name:'印尼',flag:'🇮🇩'},
+            {code:'TR',name:'土耳其',flag:'🇹🇷'},{code:'SA',name:'沙特',flag:'🇸🇦'},{code:'ZA',name:'南非',flag:'🇿🇦'},{code:'AR',name:'阿根廷',flag:'🇦🇷'},
+            {code:'TH',name:'泰国',flag:'🇹🇭'},{code:'VN',name:'越南',flag:'🇻🇳'},{code:'PH',name:'菲律宾',flag:'🇵🇭'},{code:'MY',name:'马来西亚',flag:'🇲🇾'},
+            {code:'SG',name:'新加坡',flag:'🇸🇬'},{code:'TW',name:'台湾',flag:''},{code:'NL',name:'荷兰',flag:''},{code:'BE',name:'比利时',flag:''},{code:'CH',name:'瑞士',flag:''},
+            {code:'SE',name:'瑞典',flag:''},{code:'NO',name:'挪威',flag:''},{code:'DK',name:'丹麦',flag:''},{code:'FI',name:'芬兰',flag:''},
+            {code:'PL',name:'波兰',flag:''},{code:'CZ',name:'捷克',flag:''},{code:'HU',name:'匈牙利',flag:''},{code:'GR',name:'希腊',flag:''},
+            {code:'PT',name:'葡萄牙',flag:''},{code:'IE',name:'爱尔兰',flag:''},{code:'AT',name:'奥地利',flag:''},{code:'NZ',name:'新西兰',flag:''}
+        ];
+
+        let selectedLang = null;
+        let currentUser = null;
+        let modalCallback = null;
+        let userToken = localStorage.getItem('userToken') || null;
+
+        const gameIcons = {
+            'chess': '♟️', 'go': '⚫', 'chineseChess': '🀄', 'gomoku': '⚪',
+            'othello': '🔘', 'checkers': '🔴', 'flightChess': '✈️',
+            'poker': '🃏', 'texasHoldem': '🎰', 'zhaJinHua': '🌸', 'douDiZhu': '👲'
+        };
+
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function initSplash() {
+            let progress = 0;
+            const bar = document.getElementById('progress-bar');
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    setTimeout(() => switchPage('language-page'), 300);
+                }
+                bar.style.width = progress + '%';
+            }, 200);
+        }
+
+        function renderCountries(filter = '') {
+            const grid = document.getElementById('country-grid');
+            grid.innerHTML = countries
+                .filter(c => c.name.includes(filter))
+                .map(c => `
+                    <div class="country-item ${selectedLang === c.code ? 'selected' : ''}" 
+                         onclick="selectLanguage('${c.code}')">
+                        <div class="country-flag">${c.flag}</div>
+                        <div class="country-name">${c.name}</div>
+                    </div>
+                `).join('');
+        }
+
+        function filterCountries() {
+            const search = document.getElementById('country-search').value;
+            renderCountries(search);
+        }
+
+        function selectLanguage(code) {
+            selectedLang = code;
+            renderCountries(document.getElementById('country-search').value);
+            document.getElementById('confirm-lang-btn').disabled = false;
+        }
+
+        function confirmLanguage() {
+            if (selectedLang) switchPage('login-page');
+        }
+
+        async function handleRegister() {
+            const email = document.getElementById('register-email').value.trim();
+            const nickname = document.getElementById('register-nickname').value.trim();
+            const password = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm').value;
+            
+            if (!email || !nickname || !password) {
+                showModal('错误', '请填写所有字段');
+                return;
+            }
+            
+            if (!email.match(/^[a-zA-Z0-9._%+-]+@qq\.com$/)) {
+                showModal('错误', '请输入有效的QQ邮箱');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showModal('错误', '密码至少需要6位');
+                return;
+            }
+            
+            if (password !== confirm) {
+                showModal('错误', '两次输入的密码不一致');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, nickname })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    showModal('成功', '注册成功！请登录', () => {
+                        switchPage('login-page');
+                    });
+                } else {
+                    showModal('错误', data.message);
+                }
+            } catch (error) {
+                showModal('错误', '网络错误，请稍后重试');
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            
+            if (!email || !password) {
+                showModal('错误', '请填写邮箱和密码');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    userToken = data.token;
+                    localStorage.setItem('userToken', userToken);
+                    currentUser = { 
+                        name: data.user.nickname, 
+                        email: data.user.email, 
+                        isGuest: false,
+                        stats: data.user.stats
+                    };
+                    loginSuccess();
+                } else {
+                    showModal('错误', data.message);
+                }
+            } catch (error) {
+                showModal('错误', '网络错误，请稍后重试');
+            }
+        }
+
+        function handleGuestLogin() {
+            currentUser = { name: '游客' + Math.floor(Math.random() * 10000), email: 'guest@example.com', isGuest: true };
+            userToken = null;
+            localStorage.removeItem('userToken');
+            loginSuccess();
+        }
+
+        function loginSuccess() {
+            document.getElementById('user-name').textContent = currentUser.name;
+            document.getElementById('profile-name').textContent = currentUser.name;
+            document.getElementById('profile-email').textContent = currentUser.email;
+            document.getElementById('bottom-nav').style.display = 'flex';
+            updateStats();
+            switchPage('home-page');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            if (tab === 'home') switchPage('home-page');
+            else if (tab === 'profile') switchPage('profile-page');
+            else showModal('提示', '排行榜功能即将上线');
+        }
+
+        function enterGame(gameType) {
+            document.getElementById('current-game-icon').textContent = gameIcons[gameType] || '♟️';
+            document.getElementById('room-code').textContent = generateRoomCode();
+            switchPage('game-room-page');
+        }
+
+        function leaveRoom() {
+            switchPage('home-page');
+        }
+
+        function generateRoomCode() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+
+        function selectAI(btn, level) {
+            document.querySelectorAll('.ai-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (msg) {
+                const box = document.getElementById('chat-box');
+                box.innerHTML += `<div style="margin-bottom:5px"><strong>你:</strong> ${msg}</div>`;
+                box.scrollTop = box.scrollHeight;
+                input.value = '';
+            }
+        }
+
+        function updateStats() {
+            let wins = 0, losses = 0, draws = 0, total = 0, rate = 0;
+            
+            if (currentUser && currentUser.stats) {
+                wins = currentUser.stats.wins || 0;
+                losses = currentUser.stats.losses || 0;
+                draws = currentUser.stats.draws || 0;
+                total = currentUser.stats.totalGames || 0;
+                rate = currentUser.stats.winRate || 0;
+            } else {
+                wins = Math.floor(Math.random() * 100);
+                losses = Math.floor(Math.random() * 50);
+                draws = Math.floor(Math.random() * 20);
+                total = wins + losses + draws;
+                rate = total > 0 ? Math.round(wins / total * 100) : 0;
+            }
+            
+            document.getElementById('win-rate').textContent = rate + '%';
+            document.getElementById('total-games').textContent = total;
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-wins').textContent = wins;
+            document.getElementById('stat-losses').textContent = losses;
+            document.getElementById('stat-draws').textContent = draws;
+            
+            const pie = document.getElementById('win-rate-pie');
+            pie.setAttribute('data-rate', rate + '%');
+            pie.style.setProperty('--win-angle', (rate / 100 * 360) + 'deg');
+            
+            // 更新各游戏胜率
+            const gameRates = ['chess', 'go', 'chinese-chess', 'gomoku', 'othello', 'checkers', 'flightChess', 'poker', 'texasHoldem', 'zhaJinHua', 'douDiZhu'];
+            gameRates.forEach(game => {
+                const el = document.getElementById('rate-' + game);
+                if (el) {
+                    if (currentUser && currentUser.stats && currentUser.stats.byGame && currentUser.stats.byGame[game]) {
+                        const gameStats = currentUser.stats.byGame[game];
+                        const gameRate = gameStats.total > 0 ? Math.round(gameStats.wins / gameStats.total * 100) : 0;
+                        el.textContent = gameRate + '% (' + gameStats.total + '局)';
+                    } else {
+                        el.textContent = Math.floor(Math.random() * 40 + 30) + '%';
+                    }
+                }
+            });
+        }
+
+        function showModal(title, message, callback) {
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-message').textContent = message;
+            document.getElementById('modal-overlay').classList.add('active');
+            modalCallback = callback;
+        }
+
+        function closeModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+            modalCallback = null;
+        }
+
+        function confirmModal() {
+            if (modalCallback) modalCallback();
+            closeModal();
+        }
+
+        async function handleLogout() {
+            showModal('确认退出', '确定要退出登录吗？', async () => {
+                if (userToken && currentUser && !currentUser.isGuest) {
+                    try {
+                        await fetch(`/api/user/${currentUser.email}/logout`, {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + userToken }
+                        });
+                    } catch (e) {
+                        // 忽略错误
+                    }
+                }
+                currentUser = null;
+                userToken = null;
+                localStorage.removeItem('userToken');
+                document.getElementById('bottom-nav').style.display = 'none';
+                switchPage('login-page');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCountries();
+            initSplash();
+        });
+
+        document.getElementById('chat-input')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendChat();
+        });
+    </script>
 </body>
 </html>

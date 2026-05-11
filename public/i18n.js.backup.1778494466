@@ -1,5 +1,5 @@
 // ============================================================
-// i18n 国际化翻译系统 - 190种语言
+// i18n 国际化翻译系统 - 40种语言
 // ============================================================
 
 const LANGUAGES = {
@@ -41,71 +41,7 @@ const LANGUAGES = {
     'sr':    { name: 'Српски',   native: 'Српски',     flag: '🇷🇸', fontClass: '' },
     'bg':    { name: 'Български', native: 'Български',   flag: '🇧🇬', fontClass: '' },
     'ca':    { name: 'Català',   native: 'Català',     flag: '🇪🇸', fontClass: '' },
-    'sw':    { name: 'Kiswahili', native: 'Kiswahili',  flag: '🇰🇪', fontClass: '' },
-    // ===== 欧洲语言（50种）=====
-    // 英国群岛
-    'en-GB': { name: '英国英语', native: 'British English', flag: '🇬🇧', fontClass: '' },
-    'gd': { name: '苏格兰盖尔语', native: 'Gàidhlig', flag: '🏴', fontClass: '' },
-    'cy': { name: '威尔士语', native: 'Cymraeg', flag: '🏴', fontClass: '' },
-    'ga': { name: '爱尔兰语', native: 'Gaeilge', flag: '🇮🇪', fontClass: '' },
-    'gv': { name: '马恩岛语', native: 'Gaelg', flag: '🇮🇲', fontClass: '' },
-    // 法国及邻国
-    'fr-BE': { name: '比利时法语', native: 'Français (Belgique)', flag: '🇧🇪', fontClass: '' },
-    'lb': { name: '卢森堡语', native: 'Lëtzebuergesch', flag: '🇱🇺', fontClass: '' },
-    'de-LU': { name: '卢森堡德语', native: 'Deutsch (Luxemburg)', flag: '🇱🇺', fontClass: '' },
-    'fr-MC': { name: '摩纳哥法语', native: 'Français (Monaco)', flag: '🇲🇨', fontClass: '' },
-    'ca-AD': { name: '安道尔加泰罗尼亚语', native: 'Català (Andorra)', flag: '🇦🇩', fontClass: '' },
-    // 德国及邻国
-    'de-AT': { name: '奥地利德语', native: 'Deutsch (Österreich)', flag: '🇦🇹', fontClass: '' },
-    'de-CH': { name: '瑞士德语', native: 'Deutsch (Schweiz)', flag: '🇨🇭', fontClass: '' },
-    'gsw': { name: '瑞士阿勒曼尼语', native: 'Schwiizertüütsch', flag: '🇨🇭', fontClass: '' },
-    'li': { name: '列支敦士登德语', native: 'Deutsch (Liechtenstein)', flag: '🇱🇮', fontClass: '' },
-    // 意大利及邻国
-    'it-SM': { name: '圣马力诺意大利语', native: 'Italiano (San Marino)', flag: '🇸🇲', fontClass: '' },
-    'la': { name: '拉丁语', native: 'Latina', flag: '🇻🇦', fontClass: '' },
-    'mt': { name: '马耳他语', native: 'Malti', flag: '🇲🇹', fontClass: '' },
-    // 伊比利亚半岛
-    'es-GI': { name: '直布罗陀英语', native: 'English (Gibraltar)', flag: '🇬🇮', fontClass: '' },
-    'pt-PT': { name: '葡萄牙葡萄牙语', native: 'Português (Portugal)', flag: '🇵🇹', fontClass: '' },
-    'gl': { name: '加利西亚语', native: 'Galego', flag: '🇪🇸', fontClass: '' },
-    'eu': { name: '巴斯克语', native: 'Euskara', flag: '🇪🇸', fontClass: '' },
-    'ast': { name: '阿斯图里亚斯语', native: 'Asturianu', flag: '🇪🇸', fontClass: '' },
-    // 低地国家
-    'nl-BE': { name: '比利时荷兰语', native: 'Nederlands (België)', flag: '🇧🇪', fontClass: '' },
-    'fy': { name: '弗里斯兰语', native: 'Frysk', flag: '🇳🇱', fontClass: '' },
-    'lim': { name: '林堡语', native: 'Limburgs', flag: '🇳🇱', fontClass: '' },
-    // 北欧
-    'is': { name: '冰岛语', native: 'Íslenska', flag: '🇮🇸', fontClass: '' },
-    'fo': { name: '法罗语', native: 'Føroyskt', flag: '🇫🇴', fontClass: '' },
-    'nn': { name: '挪威尼诺斯克语', native: 'Norsk nynorsk', flag: '🇳🇴', fontClass: '' },
-    'nb': { name: '挪威博克马尔语', native: 'Norsk bokmål', flag: '🇳🇴', fontClass: '' },
-    'se': { name: '北萨米语', native: 'Davvisámegiella', flag: '🇸🇪', fontClass: '' },
-    // 斯拉夫语族 - 西斯拉夫
-    'sk': { name: '斯洛伐克语', native: 'Slovenčina', flag: '🇸🇰', fontClass: '' },
-    'szl': { name: '西里西亚语', native: 'Ślůnski', flag: '🇵🇱', fontClass: '' },
-    'csb': { name: '卡舒比语', native: 'Kaszëbsczi', flag: '🇵🇱', fontClass: '' },
-    // 斯拉夫语族 - 南斯拉夫
-    'hr': { name: '克罗地亚语', native: 'Hrvatski', flag: '🇭🇷', fontClass: '' },
-    'sl': { name: '斯洛文尼亚语', native: 'Slovenščina', flag: '🇸🇮', fontClass: '' },
-    'bs': { name: '波斯尼亚语', native: 'Bosanski', flag: '🇧🇦', fontClass: '' },
-    'me': { name: '黑山语', native: 'Crnogorski', flag: '🇲🇪', fontClass: '' },
-    'mk': { name: '马其顿语', native: 'Македонски', flag: '🇲🇰', fontClass: '' },
-    // 其他欧洲
-    'sq': { name: '阿尔巴尼亚语', native: 'Shqip', flag: '🇦🇱', fontClass: '' },
-    'tr-CY': { name: '塞浦路斯土耳其语', native: 'Türkçe (Kıbrıs)', flag: '🇨🇾', fontClass: '' },
-    'el-CY': { name: '塞浦路斯希腊语', native: 'Ελληνικά (Κύπρος)', flag: '🇨🇾', fontClass: '' },
-    'be-BY': { name: '白俄罗斯语', native: 'Беларуская', flag: '🇧🇾', fontClass: '' },
-    'mo': { name: '摩尔多瓦语', native: 'Moldovenească', flag: '🇲🇩', fontClass: '' },
-    'ro-MD': { name: '摩尔多瓦罗马尼亚语', native: 'Română (Moldova)', flag: '🇲🇩', fontClass: '' },
-    'ru-MD': { name: '摩尔多瓦俄语', native: 'Русский (Молдова)', flag: '🇲🇩', fontClass: '' },
-    // 波罗的海
-    'et': { name: '爱沙尼亚语', native: 'Eesti', flag: '🇪🇪', fontClass: '' },
-    'lv': { name: '拉脱维亚语', native: 'Latviešu', flag: '🇱🇻', fontClass: '' },
-    'lt': { name: '立陶宛语', native: 'Lietuvių', flag: '🇱🇹', fontClass: '' },
-    // 高加索
-    'ka': { name: '格鲁吉亚语', native: 'ქართული', flag: '🇬🇪', fontClass: '' },
-    'hy': { name: '亚美尼亚语', native: 'Հայերեն', flag: '🇦🇲', fontClass: '' },
-    'az': { name: '阿塞拜疆语', native: 'Azərbaycanca', flag: '🇦🇿', fontClass: '' },
+    'sw':    { name: 'Kiswahili', native: 'Kiswahili',  flag: '🇰🇪', fontClass: '' }
 };
 
 // 翻译映射表 - 用于聊天翻译的语言代码映射
@@ -150,6 +86,7 @@ const TRANSLATE_LANG_MAP = {
     'ca':    'ca',
     'sw':    'sw'
 };
+
 // ============================================================
 // UI文本翻译
 // ============================================================

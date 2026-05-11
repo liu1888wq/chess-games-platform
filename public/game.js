@@ -19,7 +19,10 @@ const gameConfigs = {
     checkers: { name: '跳棋', rows: 8, cols: 8 },
     othello: { name: '黑白棋', rows: 8, cols: 8 },
     flightChess: { name: '飞行棋', rows: 1, cols: 1 },
-    poker: { name: '扑克牌', rows: 1, cols: 1 }
+    poker: { name: '21点', rows: 1, cols: 1 },
+    texasHoldem: { name: '德州扑克', rows: 1, cols: 1 },
+    zhaJinHua: { name: '炸金花', rows: 1, cols: 1 },
+    douDiZhu: { name: '斗地主', rows: 1, cols: 1 }
 };
 
 // 棋子显示
@@ -368,6 +371,9 @@ function renderBoard() {
             renderFlightChessBoard(container);
             break;
         case 'poker': renderPokerBoard(container); break;
+        case 'texasHoldem': renderTexasHoldemBoard(container); break;
+        case 'zhaJinHua': renderZhaJinHuaBoard(container); break;
+        case 'douDiZhu': renderDouDiZhuBoard(container); break;
     }
 }
 
@@ -989,7 +995,8 @@ function selectAIColor(color) {
 function startAIGame() {
     const selectedColor = document.querySelector('.color-option.selected');
     const color = selectedColor?.classList.contains('white') ? 'white' : 'black';
-    send('playWithAI', { gameType: currentRoom.gameType, playerName, playerColor: color });
+    const difficulty = document.getElementById('ai-difficulty')?.value || 'normal';
+    send('playWithAI', { gameType: currentRoom.gameType, playerName, playerColor: color, difficulty });
 }
 
 function requestAIMove() {
@@ -1109,4 +1116,368 @@ function pokerHit() {
 function pokerStand() {
     if (!ws || !currentRoom) return;
     ws.send(JSON.stringify({ type: 'move', action: 'stand' }));
+}
+
+// ==================== 德州扑克渲染 ====================
+function renderTexasHoldemBoard(container) {
+    if (!gameState) return;
+    
+    const isPlayerTurn = gameState.currentPlayer === 'player' && gameState.status === 'playing';
+    const gameEnded = gameState.status === 'ended';
+    
+    // 渲染公共牌
+    let communityCardsHtml = '';
+    if (gameState.communityCards && gameState.communityCards.length > 0) {
+        communityCardsHtml = `
+            <div style="margin: 20px 0;">
+                <h4 style="color: #aaa; margin-bottom: 10px;">公共牌</h4>
+                <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                    ${gameState.communityCards.map(card => {
+                        const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
+                        return '<div style="width: 60px; height: 85px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; color: ' + color + '; border: 2px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><span style="font-size: 20px; font-weight: bold;">' + card.value + '</span><span style="font-size: 16px;">' + card.suit + '</span></div>';
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // 渲染AI手牌
+    let aiHandHtml = '';
+    if (gameEnded) {
+        aiHandHtml = gameState.aiHand.map(card => {
+            const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
+            return '<div style="width: 60px; height: 85px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; color: ' + color + '; border: 2px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><span style="font-size: 20px; font-weight: bold;">' + card.value + '</span><span style="font-size: 16px;">' + card.suit + '</span></div>';
+        }).join('');
+    } else {
+        aiHandHtml = '<div style="width: 60px; height: 85px; background: linear-gradient(135deg, #e94560, #c0392b); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #fff;">🂠</div><div style="width: 60px; height: 85px; background: linear-gradient(135deg, #e94560, #c0392b); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #fff;">🂠</div>';
+    }
+    
+    container.innerHTML = `
+        <div style="text-align: center; padding: 20px; max-width: 700px; margin: 0 auto;">
+            <h2 style="color: #f39c12; margin-bottom: 15px;">🃏 德州扑克 Texas Hold'em</h2>
+            
+            <!-- 游戏信息 -->
+            <div style="display: flex; justify-content: space-around; margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                <span style="color: #f39c12;">底池: ${gameState.pot}</span>
+                <span style="color: #aaa;">轮次: ${getRoundName(gameState.round)}</span>
+            </div>
+            
+            <!-- AI区域 -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #aaa; margin-bottom: 10px;">🤖 AI (筹码: ${gameState.aiChips})</h3>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    ${aiHandHtml}
+                </div>
+            </div>
+            
+            <!-- 公共牌 -->
+            ${communityCardsHtml}
+            
+            <!-- 玩家区域 -->
+            <div style="margin: 20px 0;">
+                <h3 style="color: #f39c12; margin-bottom: 10px;">👤 玩家 (筹码: ${gameState.playerChips})</h3>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    ${gameState.playerHand.map(card => {
+                        const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
+                        return '<div style="width: 60px; height: 85px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; color: ' + color + '; border: 2px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><span style="font-size: 20px; font-weight: bold;">' + card.value + '</span><span style="font-size: 16px;">' + card.suit + '</span></div>';
+                    }).join('')}
+                </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            ${!gameEnded && isPlayerTurn ? `
+                <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                    <button onclick="texasHoldemFold()" style="padding: 12px 25px; font-size: 1em; background: linear-gradient(90deg, #e74c3c, #c0392b); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">弃牌</button>
+                    <button onclick="texasHoldemCheck()" style="padding: 12px 25px; font-size: 1em; background: linear-gradient(90deg, #3498db, #2980b9); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">过牌</button>
+                    <button onclick="texasHoldemCall()" style="padding: 12px 25px; font-size: 1em; background: linear-gradient(90deg, #27ae60, #2ecc71); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">跟注</button>
+                    <button onclick="texasHoldemRaise()" style="padding: 12px 25px; font-size: 1em; background: linear-gradient(90deg, #f39c12, #e67e22); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">加注</button>
+                    <button onclick="texasHoldemAllIn()" style="padding: 12px 25px; font-size: 1em; background: linear-gradient(90deg, #9b59b6, #8e44ad); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">全押</button>
+                </div>
+            ` : !gameEnded ? '<p style="color: #aaa; margin-top: 20px;">AI思考中...</p>' : ''}
+            
+            <!-- 消息 -->
+            ${gameState.message ? `
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <p style="font-size: 1.2em; color: ${gameState.winner === 'player' ? '#2ecc71' : gameState.winner === 'ai' ? '#e74c3c' : '#f39c12'}; font-weight: bold;">${gameState.message}</p>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function getRoundName(round) {
+    const names = {
+        'preflop': '翻牌前',
+        'flop': '翻牌',
+        'turn': '转牌',
+        'river': '河牌',
+        'showdown': '比牌'
+    };
+    return names[round] || round;
+}
+
+function texasHoldemFold() {
+    if (!ws || !currentRoom) return;
+    ws.send(JSON.stringify({ type: 'move', extra: { action: 'fold' } }));
+}
+
+function texasHoldemCheck() {
+    if (!ws || !currentRoom) return;
+    ws.send(JSON.stringify({ type: 'move', extra: { action: 'check' } }));
+}
+
+function texasHoldemCall() {
+    if (!ws || !currentRoom) return;
+    ws.send(JSON.stringify({ type: 'move', extra: { action: 'call' } }));
+}
+
+function texasHoldemRaise() {
+    if (!ws || !currentRoom) return;
+    const amount = parseInt(prompt('请输入加注金额:', '50')) || 50;
+    ws.send(JSON.stringify({ type: 'move', extra: { action: 'raise', amount: amount } }));
+}
+
+function texasHoldemAllIn() {
+    if (!ws || !currentRoom) return;
+    if (confirm('确定要全押吗？')) {
+        ws.send(JSON.stringify({ type: 'move', extra: { action: 'allin' } }));
+    }
+}
+
+// ==================== 炸金花渲染 ====================
+function renderZhaJinHuaBoard(container) {
+    if (!gameState) return;
+    
+    const isPlayerTurn = gameState.currentPlayer === 'player' && gameState.status === 'playing';
+    const gameEnded = gameState.status === 'ended';
+    
+    // 渲染AI手牌（背面）
+    let aiHandHtml = '';
+    if (gameEnded) {
+        aiHandHtml = gameState.aiHand.map(card => {
+            const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
+            return '<div style="width: 60px; height: 85px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; color: ' + color + '; border: 2px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><span style="font-size: 20px; font-weight: bold;">' + card.value + '</span><span style="font-size: 16px;">' + card.suit + '</span></div>';
+        }).join('');
+    } else {
+        aiHandHtml = Array(3).fill('<div style="width: 60px; height: 85px; background: linear-gradient(135deg, #e94560, #c0392b); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #fff;">🂠</div>').join('');
+    }
+    
+    // 玩家手牌（如果已看牌则显示正面）
+    let playerHandHtml = '';
+    if (gameState.playerSeen || gameEnded) {
+        playerHandHtml = gameState.playerHand.map(card => {
+            const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
+            return '<div style="width: 60px; height: 85px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; color: ' + color + '; border: 2px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><span style="font-size: 20px; font-weight: bold;">' + card.value + '</span><span style="font-size: 16px;">' + card.suit + '</span></div>';
+        }).join('');
+    } else {
+        playerHandHtml = Array(3).fill('<div style="width: 60px; height: 85px; background: linear-gradient(135deg, #e94560, #c0392b); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #fff;">🂠</div>').join('');
+    }
+    
+    container.innerHTML = `
+        <div style="text-align: center; padding: 20px; max-width: 600px; margin: 0 auto;">
+            <h2 style="color: #f39c12; margin-bottom: 15px;">🃏 炸金花 Zha Jin Hua</h2>
+            
+            <!-- 游戏信息 -->
+            <div style="display: flex; justify-content: space-around; margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                <span style="color: #f39c12;">底池: ${gameState.pot}</span>
+                <span style="color: #aaa;">底注: ${gameState.currentBet}</span>
+            </div>
+            
+            <!-- AI区域 -->
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #aaa; margin-bottom: 10px;">🤖 AI (筹码: ${gameState.aiChips})</h3>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    ${aiHandHtml}
+                </div>
+            </div>
+            
+            <!-- 玩家区域 -->
+            <div style="margin: 20px 0;">
+                <h3 style="color: #f39c12; margin-bottom: 10px;">👤 玩家 (筹码: ${gameState.playerChips}) ${gameState.playerSeen ? '(已看牌)' : '(未看牌)'}</h3>
+                <div style="display: flex; justify-content: center; gap: 10px;">
+                    ${playerHandHtml}
+                </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            ${!gameEnded && isPlayerTurn ? `
+                <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+                    <button onclick="zhaJinHuaFold()" style="padding: 15px 30px; font-size: 1.1em; background: linear-gradient(90deg, #e74c3c, #c0392b); color: #fff; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;">弃牌</button>
+                    <button onclick="zhaJinHuaSee()" style="padding: 15px 30px; font-size: 1.1em; background: linear-gradient(90deg, #27ae60, #2ecc71); color: #fff; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;">看牌比牌</button>
+                    <button onclick="zhaJinHuaBet()" style="padding: 15px 30px; font-size: 1.1em; background: linear-gradient(90deg, #f39c12, #e67e22); color: #fff; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;">下注</button>
+                </div>
+            ` : !gameEnded ? '<p style="color: #aaa; margin-top: 20px;">AI思考中...</p>' : ''}
+            
+            <!-- 消息 -->
+            ${gameState.message ? `
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <p style="font-size: 1.2em; color: ${gameState.winner === 'player' ? '#2ecc71' : gameState.winner === 'ai' ? '#e74c3c' : '#f39c12'}; font-weight: bold;">${gameState.message}</p>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function zhaJinHuaFold() {
+    if (!ws || !currentRoom) return;
+    ws.send(JSON.stringify({ type: 'move', extra: { action: 'fold' } }));
+}
+
+function zhaJinHuaSee() {
+    if (!ws || !currentRoom) return;
+    ws.send(JSON.stringify({ type: 'move', extra: { action: 'see' } }));
+}
+
+function zhaJinHuaBet() {
+    if (!ws || !currentRoom) return;
+    const amount = parseInt(prompt('请输入下注金额:', '20')) || 20;
+    ws.send(JSON.stringify({ type: 'move', extra: { action: 'bet', amount: amount } }));
+}
+
+// ==================== 斗地主渲染 ====================
+function renderDouDiZhuBoard(container) {
+    if (!gameState) return;
+    
+    const isPlayerTurn = gameState.currentPlayer === 'player' && gameState.status === 'playing';
+    const gameEnded = gameState.status === 'ended';
+    const isCallingPhase = gameState.phase === 'calling';
+    
+    // 底牌显示
+    let bottomCardsHtml = '';
+    if (gameState.landlord) {
+        bottomCardsHtml = `
+            <div style="margin: 15px 0;">
+                <h4 style="color: #f39c12; margin-bottom: 10px;">底牌</h4>
+                <div style="display: flex; justify-content: center; gap: 8px;">
+                    ${gameState.bottomCards.map(card => {
+                        const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
+                        return '<div style="width: 50px; height: 70px; background: #fff; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; color: ' + color + '; border: 2px solid #ddd;"><span style="font-size: 16px; font-weight: bold;">' + card.value + '</span><span style="font-size: 14px;">' + card.suit + '</span></div>';
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // AI手牌数量
+    const ai1Count = gameState.ai1Hand ? gameState.ai1Hand.length : 17;
+    const ai2Count = gameState.ai2Hand ? gameState.ai2Hand.length : 17;
+    
+    // 上家出牌
+    let lastPlayHtml = '';
+    if (gameState.lastPlay && gameState.lastPlayer) {
+        const playerName = gameState.lastPlayer === 'player' ? '玩家' : gameState.lastPlayer;
+        lastPlayHtml = `
+            <div style="margin: 15px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                <p style="color: #aaa; margin-bottom: 8px;">${playerName}出牌:</p>
+                <div style="display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;">
+                    ${gameState.lastPlay.cards.map(card => {
+                        const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
+                        return '<div style="width: 45px; height: 65px; background: #fff; border-radius: 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; color: ' + color + '; border: 1px solid #ddd;"><span style="font-size: 14px; font-weight: bold;">' + card.value + '</span><span style="font-size: 12px;">' + card.suit + '</span></div>';
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // 玩家手牌
+    const playerHandHtml = gameState.playerHand.map((card, index) => {
+        const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
+        return '<div class="dou-card" data-index="' + index + '" data-suit="' + card.suit + '" data-value="' + card.value + '" onclick="toggleDouDiZhuCard(' + index + ')" style="width: 55px; height: 80px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; color: ' + color + '; border: 2px solid #ddd; cursor: pointer; transition: transform 0.2s; user-select: none;"><span style="font-size: 18px; font-weight: bold;">' + card.value + '</span><span style="font-size: 15px;">' + card.suit + '</span></div>';
+    }).join('');
+    
+    container.innerHTML = `
+        <div style="text-align: center; padding: 15px; max-width: 800px; margin: 0 auto;">
+            <h2 style="color: #f39c12; margin-bottom: 10px;">🃏 斗地主 Dou Di Zhu</h2>
+            
+            <!-- 游戏信息 -->
+            <div style="display: flex; justify-content: space-around; margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; flex-wrap: wrap; gap: 10px;">
+                <span style="color: ${gameState.landlord === 'player' ? '#f39c12' : '#aaa'}">👤 玩家 ${gameState.landlord === 'player' ? '(地主)' : '(农民)'} - ${gameState.playerHand ? gameState.playerHand.length : 0}张</span>
+                <span style="color: ${gameState.landlord === 'ai1' ? '#f39c12' : '#aaa'}">🤖 AI1 ${gameState.landlord === 'ai1' ? '(地主)' : '(农民)'} - ${ai1Count}张</span>
+                <span style="color: ${gameState.landlord === 'ai2' ? '#f39c12' : '#aaa'}">🤖 AI2 ${gameState.landlord === 'ai2' ? '(地主)' : '(农民)'} - ${ai2Count}张</span>
+            </div>
+            
+            <!-- 底牌 -->
+            ${bottomCardsHtml}
+            
+            <!-- 上家出牌 -->
+            ${lastPlayHtml}
+            
+            <!-- 玩家手牌 -->
+            <div style="margin: 20px 0;">
+                <h3 style="color: #f39c12; margin-bottom: 10px;">你的手牌</h3>
+                <div id="dou-player-hand" style="display: flex; justify-content: center; gap: 5px; flex-wrap: wrap;">
+                    ${playerHandHtml}
+                </div>
+            </div>
+            
+            <!-- 叫分按钮 -->
+            ${isCallingPhase && isPlayerTurn ? `
+                <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px; flex-wrap: wrap;">
+                    <button onclick="douDiZhuCall(0)" style="padding: 12px 25px; font-size: 1em; background: linear-gradient(90deg, #7f8c8d, #95a5a6); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">不叫</button>
+                    <button onclick="douDiZhuCall(1)" style="padding: 12px 25px; font-size: 1em; background: linear-gradient(90deg, #3498db, #2980b9); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">1分</button>
+                    <button onclick="douDiZhuCall(2)" style="padding: 12px 25px; font-size: 1em; background: linear-gradient(90deg, #27ae60, #2ecc71); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">2分</button>
+                    <button onclick="douDiZhuCall(3)" style="padding: 12px 25px; font-size: 1em; background: linear-gradient(90deg, #f39c12, #e67e22); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">3分</button>
+                </div>
+            ` : ''}
+            
+            <!-- 出牌按钮 -->
+            ${!isCallingPhase && !gameEnded && isPlayerTurn ? `
+                <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
+                    <button onclick="douDiZhuPass()" style="padding: 12px 30px; font-size: 1em; background: linear-gradient(90deg, #7f8c8d, #95a5a6); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;" ${!gameState.lastPlay || gameState.lastPlayer === 'player' ? 'disabled style="padding: 12px 30px; font-size: 1em; background: #555; color: #888; border: none; border-radius: 20px; cursor: not-allowed; font-weight: bold;"' : ''}>不出</button>
+                    <button onclick="douDiZhuPlay()" style="padding: 12px 30px; font-size: 1em; background: linear-gradient(90deg, #27ae60, #2ecc71); color: #fff; border: none; border-radius: 20px; cursor: pointer; font-weight: bold;">出牌</button>
+                </div>
+            ` : !gameEnded && !isCallingPhase ? '<p style="color: #aaa; margin-top: 20px;">' + gameState.message + '</p>' : ''}
+            
+            <!-- 消息 -->
+            ${gameState.message && (gameEnded || isCallingPhase) ? `
+                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                    <p style="font-size: 1.2em; color: ${gameState.winner === 'landlord' && gameState.landlord === 'player' ? '#2ecc71' : gameState.winner === 'farmers' && gameState.landlord !== 'player' ? '#2ecc71' : gameState.winner ? '#e74c3c' : '#f39c12'}; font-weight: bold;">${gameState.message}</p>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+// 斗地主选中的牌
+let selectedDouDiZhuCards = [];
+
+function toggleDouDiZhuCard(index) {
+    const cardEl = document.querySelectorAll('#dou-player-hand .dou-card')[index];
+    if (!cardEl) return;
+    
+    const cardIndex = selectedDouDiZhuCards.indexOf(index);
+    if (cardIndex > -1) {
+        selectedDouDiZhuCards.splice(cardIndex, 1);
+        cardEl.style.transform = 'translateY(0)';
+        cardEl.style.borderColor = '#ddd';
+    } else {
+        selectedDouDiZhuCards.push(index);
+        cardEl.style.transform = 'translateY(-15px)';
+        cardEl.style.borderColor = '#f39c12';
+    }
+}
+
+function douDiZhuCall(score) {
+    if (!ws || !currentRoom) return;
+    ws.send(JSON.stringify({ type: 'move', extra: { action: 'call', score: score } }));
+}
+
+function douDiZhuPass() {
+    if (!ws || !currentRoom) return;
+    selectedDouDiZhuCards = [];
+    ws.send(JSON.stringify({ type: 'move', extra: { action: 'pass' } }));
+}
+
+function douDiZhuPlay() {
+    if (!ws || !currentRoom) return;
+    if (selectedDouDiZhuCards.length === 0) {
+        alert('请选择要出的牌');
+        return;
+    }
+    
+    const hand = gameState.playerHand;
+    const cards = selectedDouDiZhuCards.map(index => hand[index]);
+    selectedDouDiZhuCards = [];
+    
+    ws.send(JSON.stringify({ type: 'move', extra: { action: 'play', cards: cards } }));
 }

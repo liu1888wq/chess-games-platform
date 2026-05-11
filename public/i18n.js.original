@@ -106,10 +106,26 @@ const LANGUAGES = {
     'ka': { name: '格鲁吉亚语', native: 'ქართული', flag: '🇬🇪', fontClass: '' },
     'hy': { name: '亚美尼亚语', native: 'Հայերեն', flag: '🇦🇲', fontClass: '' },
     'az': { name: '阿塞拜疆语', native: 'Azərbaycanca', flag: '🇦🇿', fontClass: '' },
-};
-
-// 翻译映射表 - 用于聊天翻译的语言代码映射
-const TRANSLATE_LANG_MAP = {
+    // ===== 亚洲语言（60种）=====
+    // 中文变体
+    'zh-HK': { name: '香港粤语', native: '香港粵語', flag: '🇭🇰', fontClass: '' },
+    'zh-MO': { name: '澳门中文', native: '澳門中文', flag: '🇲🇴', fontClass: '' },
+    // 朝鲜半岛
+    'ko-KP': { name: '朝鲜语', native: '조선말', flag: '🇰🇵', fontClass: '' },
+    // 蒙古
+    'mn': { name: '蒙古语', native: 'Монгол', flag: '🇲🇳', fontClass: '' },
+    // 中亚突厥语族
+    'kk': { name: '哈萨克语', native: 'Қазақша', flag: '🇰🇿', fontClass: '' },
+    'ky': { name: '吉尔吉斯语', native: 'Кыргызча', flag: '🇰🇬', fontClass: '' },
+    'tg': { name: '塔吉克语', native: 'Тоҷикӣ', flag: '🇹🇯', fontClass: '' },
+    'uz': { name: '乌兹别克语', native: 'Oʻzbekcha', flag: '🇺🇿', fontClass: '' },
+    'tk': { name: '土库曼语', native: 'Türkmençe', flag: '🇹🇲', fontClass: '' },
+    // 南亚
+    'ps': { name: '普什图语', native: 'پښتو', flag: '🇦🇫', fontClass: '', dir: 'rtl' },
+    'ur': { name: '乌尔都语', native: 'اردو', flag: '🇵🇰', fontClass: '', dir: 'rtl' },
+    'si': { name: '僧伽罗语', native: 'සිංහල', flag: '🇱🇰', fontClass: '' },
+    'ne': { name: '尼泊尔语', native: 'नेपाली', flag: '🇳🇵', fontClass: '' },
+    'dz': { name: '宗喀语', native:
     'zh-CN': 'zh-CN',
     'zh-TW': 'zh-TW',
     'zh-CL': 'zh-CN',   // 文言文翻译为简体中文再转换
@@ -150,6 +166,7 @@ const TRANSLATE_LANG_MAP = {
     'ca':    'ca',
     'sw':    'sw'
 };
+
 // ============================================================
 // UI文本翻译
 // ============================================================
