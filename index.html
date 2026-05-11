@@ -6183,8 +6183,14 @@ function douDiZhuPlay() {
 
         document.addEventListener('DOMContentLoaded', () => {
             renderCountries();
-            initSplash();
         });
+
+        // 立即执行启动动画（不依赖 DOMContentLoaded）
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => setTimeout(initSplash, 100));
+        } else {
+            setTimeout(initSplash, 100);
+        }
 
         document.getElementById('chat-input')?.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendChat();
