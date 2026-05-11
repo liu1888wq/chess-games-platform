@@ -6127,6 +6127,9 @@ function douDiZhuPlay() {
         }
 
         function leaveRoom() {
+            // 恢复侧边栏
+            const sidebar = document.querySelector('#game-room-page .sidebar');
+            if (sidebar) sidebar.style.display = '';
             switchPage('home-page');
         }
 
@@ -6303,11 +6306,25 @@ function startLocalAIGame(gameType, difficulty) {
         case 'checkers': initLocalCheckers(); break;
         case 'poker': initLocalPoker(); break;
         default:
-            alert(gameNames[gameType] + ' 即将上线！'); return;
+            alert((typeof gameNames !== 'undefined' ? gameNames[gameType] : gameType) + ' 即将上线！'); return;
     }
 
+    // 切换到游戏房间页
     switchPage('game-room-page');
-    renderLocalGame();
+    
+    // 隐藏侧边栏，全屏显示棋盘
+    const sidebar = document.querySelector('#game-room-page .sidebar');
+    if (sidebar) sidebar.style.display = 'none';
+    const gameArea = document.querySelector('#game-room-page .game-area');
+    if (gameArea) {
+        gameArea.style.flex = '1';
+        gameArea.style.minHeight = '60vh';
+        gameArea.style.alignItems = 'center';
+        gameArea.style.justifyContent = 'center';
+    }
+    
+    // 延迟渲染确保DOM已更新
+    setTimeout(() => renderLocalGame(), 100);
 }
 
 // ===== 五子棋 AI =====
