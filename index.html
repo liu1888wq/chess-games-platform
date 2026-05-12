@@ -1019,6 +1019,31 @@
                 <div class="game-name">飞行棋</div>
                 <div class="game-players">3千人在线</div>
             </div>
+            <div class="game-card" onclick="showGameMenu('shogi')">
+                <div class="game-icon">🏯</div>
+                <div class="game-name">日本将棋</div>
+                <div class="game-players">5千人在线</div>
+            </div>
+            <div class="game-card" onclick="showGameMenu('militaryChess')">
+                <div class="game-icon">🎖️</div>
+                <div class="game-name">军棋</div>
+                <div class="game-players">3千人在线</div>
+            </div>
+            <div class="game-card" onclick="showGameMenu('animalChess')">
+                <div class="game-icon">🦁</div>
+                <div class="game-name">斗兽棋</div>
+                <div class="game-players">2千人在线</div>
+            </div>
+            <div class="game-card" onclick="showGameMenu('ticTacToe')">
+                <div class="game-icon">❌</div>
+                <div class="game-name">井字棋</div>
+                <div class="game-players">5千人在线</div>
+            </div>
+            <div class="game-card" onclick="showGameMenu('billiards')">
+                <div class="game-icon">🎱</div>
+                <div class="game-name">台球</div>
+                <div class="game-players">3千人在线</div>
+            </div>
             <div class="game-card" onclick="showGameMenu('horseRacing')">
                 <div class="game-icon">🏇</div>
                 <div class="game-name">赛马</div>
@@ -6224,6 +6249,11 @@ function startLocalAIGame(gameType, difficulty) {
         case 'go': initLocalGo(); break;
         case 'checkers': initLocalCheckers(); break;
         case 'flightChess': initLocalFlightChess(); break;
+        case 'shogi': initLocalShogi(); break;
+        case 'militaryChess': initLocalMilitaryChess(); break;
+        case 'animalChess': initLocalAnimalChess(); break;
+        case 'ticTacToe': initLocalTicTacToe(); break;
+        case 'billiards': initLocalBilliards(); break;
         case 'horseRacing': initLocalHorseRacing(); break;
         case 'poker': initLocalPoker(); break;
         case 'texasHoldem': initLocalTexasHoldem(); break;
@@ -6694,6 +6724,11 @@ function renderLocalGame() {
         case 'go': renderLocalGo(); break;
         case 'checkers': renderLocalCheckers(); break;
         case 'flightChess': renderLocalFlightChess(); break;
+        case 'shogi': renderLocalShogi(); break;
+        case 'militaryChess': renderLocalMilitaryChess(); break;
+        case 'animalChess': renderLocalAnimalChess(); break;
+        case 'ticTacToe': renderLocalTicTacToe(); break;
+        case 'billiards': renderLocalBilliards(); break;
         case 'horseRacing': renderLocalHorseRacing(); break;
         case 'poker': renderLocalPoker(); break;
         case 'texasHoldem': renderLocalTexasHoldem(); break;
@@ -7784,6 +7819,637 @@ function doudizhuAIMove() {
     
     renderLocalDouDiZhu();
     doudizhuNextPlayer();
+}
+
+// ===== 日本将棋 =====
+let shogiState = null;
+
+function initLocalShogi() {
+    shogiState = {
+        board: [
+            ['l','n','s','g','k','g','s','n','l'],
+            [0,'r',0,0,0,0,0,'b',0],
+            ['p','p','p','p','p','p','p','p','p'],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0,0],
+            [0,'B',0,0,0,0,0,'R',0],
+            ['L','N','S','G','K','G','S','N','L']
+        ],
+        currentPlayer: 'white',
+        selected: null,
+        hand: { white: [], black: [] },
+        gameOver: false,
+        winner: null
+    };
+}
+
+function renderLocalShogi() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    const gs = shogiState;
+    
+    const pieceChars = {
+        'k':'王','K':'玉','g':'金','G':'金','s':'银','S':'银','n':'桂','N':'桂',
+        'l':'香','L':'香','r':'飞','R':'飞','b':'角','B':'角','p':'步','P':'步',
+        '+r':'龙','+b':'马'
+    };
+    
+    let html = '<div style="max-width:380px;margin:0 auto;padding:10px;">';
+    
+    html += '<div style="display:flex;justify-content:space-between;margin-bottom:10px;">';
+    html += '<div style="background:var(--glass-bg);padding:8px;border-radius:8px;">';
+    html += '<small>黑持驹:</small>';
+    html += gs.hand.black.map(p => '<span style="font-size:20px;margin:2px;">'+pieceChars[p]+'</span>').join('');
+    html += '</div>';
+    html += '<div style="background:var(--glass-bg);padding:8px;border-radius:8px;">';
+    html += '<small>白持驹:</small>';
+    html += gs.hand.white.map(p => '<span style="font-size:20px;margin:2px;">'+pieceChars[p]+'</span>').join('');
+    html += '</div>';
+    html += '</div>';
+    
+    html += '<div style="background:#8B4513;padding:8px;border-radius:12px;">';
+    html += '<div style="display:grid;grid-template-columns:repeat(9,1fr);gap:2px;">';
+    
+    for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+            const p = gs.board[r][c];
+            const isBlack = p && p === p.toLowerCase();
+            const isWhite = p && p === p.toUpperCase();
+            const bg = (r + c) % 2 === 0 ? '#DEB887' : '#C4A574';
+            const border = gs.selected && gs.selected.r === r && gs.selected.c === c ? '3px solid #e94560' : '1px solid #8B4513';
+            
+            let piece = '';
+            if (p) {
+                piece = '<div style="width:90%;height:90%;background:'+ (isWhite ? '#fff' : '#111') +';border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold;color:'+ (isWhite ? '#111' : '#fff') +';">'+pieceChars[p]+'</div>';
+            }
+            
+            html += '<div onclick="shogiClick('+r+','+c+')" style="aspect-ratio:1;background:'+bg+';'+border+';display:flex;align-items:center;justify-content:center;cursor:pointer;">'+piece+'</div>';
+        }
+    }
+    html += '</div></div>';
+    
+    html += '<div style="text-align:center;margin-top:10px;padding:10px;background:var(--glass-bg);border-radius:10px;">';
+    html += '<p style="color:var(--accent-primary);">'+(gs.currentPlayer === 'white' ? '白方(你)回合' : '黑方(AI)回合')+'</p>';
+    html += '</div>';
+    
+    if (gs.gameOver) {
+        html += '<div style="text-align:center;margin-top:15px;"><p style="font-size:20px;">'+(gs.winner === 'white' ? '🎉 你赢了！' : '😤 AI赢了！')+'</p><button class="btn btn-primary" onclick="showGameMenu(\'shogi\')">再来一局</button></div>';
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function shogiClick(r, c) {
+    const gs = shogiState;
+    if (gs.gameOver || gs.currentPlayer !== 'white') return;
+    
+    const p = gs.board[r][c];
+    if (p && p === p.toUpperCase()) {
+        gs.selected = {r, c};
+        renderLocalShogi();
+        return;
+    }
+    
+    if (gs.selected) {
+        const {r: sr, c: sc} = gs.selected;
+        if (isValidShogiMove(sr, sc, r, c, 'white')) {
+            const captured = gs.board[r][c];
+            if (captured && captured === captured.toLowerCase()) {
+                gs.hand.white.push(captured.toUpperCase());
+            }
+            gs.board[r][c] = gs.board[sr][sc];
+            gs.board[sr][sc] = 0;
+            gs.selected = null;
+            gs.currentPlayer = 'black';
+            renderLocalShogi();
+            setTimeout(shogiAIMove, 500);
+            return;
+        }
+    }
+}
+
+function isValidShogiMove(sr, sc, dr, dc, player) {
+    const p = shogiState.board[sr][sc];
+    if (!p) return false;
+    const dr2 = player === 'white' ? dr - sr : sr - dr;
+    const dc2 = dc - sc;
+    const piece = p.toUpperCase();
+    switch(piece) {
+        case 'K': return Math.abs(dr2) <= 1 && Math.abs(dc2) <= 1;
+        case 'G': return Math.abs(dr2) <= 1 && Math.abs(dc2) <= 1 && !(dr2 === 0 && dc2 === 0);
+        case 'S': return (Math.abs(dr2) === 1 && Math.abs(dc2) <= 1) && !(dr2 === 1 && dc2 === 0);
+        case 'N': return dr2 === 2 && Math.abs(dc2) === 1;
+        case 'L': return dr2 > 0 && dc2 === 0;
+        case 'R': return dr2 !== 0 || dc2 !== 0;
+        case 'B': return Math.abs(dr2) === Math.abs(dc2);
+        case 'P': return dr2 === 1 && dc2 === 0;
+        default: return false;
+    }
+}
+
+function shogiAIMove() {
+    const gs = shogiState;
+    const moves = [];
+    for (let r = 0; r < 9; r++)
+        for (let c = 0; c < 9; c++)
+            if (gs.board[r][c] && gs.board[r][c] === gs.board[r][c].toLowerCase())
+                for (let dr = 0; dr < 9; dr++)
+                    for (let dc = 0; dc < 9; dc++)
+                        if (isValidShogiMove(r, c, dr, dc, 'black')) {
+                            moves.push({from:{r,c}, to:{r:dr,c:dc}, score: Math.random()});
+                        }
+    
+    if (moves.length === 0) { gs.gameOver = true; gs.winner = 'white'; renderLocalShogi(); return; }
+    moves.sort((a,b) => b.score - a.score);
+    const m = moves[Math.floor(Math.random() * Math.min(3, moves.length))];
+    gs.board[m.to.r][m.to.c] = gs.board[m.from.r][m.from.c];
+    gs.board[m.from.r][m.from.c] = 0;
+    gs.currentPlayer = 'white';
+    renderLocalShogi();
+}
+
+// ===== 井字棋 =====
+let ticTacToeState = null;
+
+function initLocalTicTacToe() {
+    ticTacToeState = {
+        board: Array(3).fill(null).map(() => Array(3).fill(0)),
+        currentPlayer: 1,
+        gameOver: false,
+        winner: null
+    };
+}
+
+function renderLocalTicTacToe() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    const gs = ticTacToeState;
+    
+    let html = '<div style="max-width:300px;margin:0 auto;padding:20px;text-align:center;">';
+    html += '<h3 style="margin-bottom:15px;">❌ 井字棋 ⭕</h3>';
+    html += '<p style="margin-bottom:15px;color:var(--accent-primary);">'+(gs.currentPlayer === 1 ? '你的回合 (×)' : 'AI思考中...')+'</p>';
+    
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;background:#333;padding:5px;border-radius:15px;">';
+    for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+            const v = gs.board[r][c];
+            const sym = v === 1 ? '×' : v === 2 ? '○' : '';
+            const color = v === 1 ? '#e94560' : v === 2 ? '#3498db' : '#666';
+            const cursor = !gs.gameOver && gs.currentPlayer === 1 && v === 0 ? 'cursor:pointer;' : '';
+            html += '<div onclick="tttClick('+r+','+c+')" style="aspect-ratio:1;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:50px;font-weight:bold;color:'+color+';'+cursor+'">'+sym+'</div>';
+        }
+    }
+    html += '</div>';
+    
+    if (gs.gameOver) {
+        const msg = gs.winner === 1 ? '🎉 你赢了！' : gs.winner === 2 ? '😤 AI赢了！' : '🤝 平局！';
+        html += '<p style="font-size:24px;margin:20px 0;">'+msg+'</p>';
+    }
+    html += '<button onclick="showGameMenu(\'ticTacToe\')" style="padding:12px 30px;background:var(--accent-primary);color:#fff;border:none;border-radius:20px;font-size:16px;cursor:pointer;margin-top:15px;">再来一局</button>';
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function tttClick(r, c) {
+    const gs = ticTacToeState;
+    if (gs.gameOver || gs.currentPlayer !== 1 || gs.board[r][c] !== 0) return;
+    
+    gs.board[r][c] = 1;
+    if (checkTicTacToeWin(1)) { gs.gameOver = true; gs.winner = 1; renderLocalTicTacToe(); return; }
+    if (isTicTacToeDraw()) { gs.gameOver = true; gs.winner = 0; renderLocalTicTacToe(); return; }
+    
+    gs.currentPlayer = 2;
+    renderLocalTicTacToe();
+    
+    setTimeout(() => {
+        const empty = [];
+        for (let r=0;r<3;r++) for (let c=0;c<3;c++) if (gs.board[r][c]===0) empty.push({r,c});
+        if (empty.length > 0) {
+            const m = empty[Math.floor(Math.random()*empty.length)];
+            gs.board[m.r][m.c] = 2;
+            if (checkTicTacToeWin(2)) { gs.gameOver = true; gs.winner = 2; }
+            else if (isTicTacToeDraw()) { gs.gameOver = true; gs.winner = 0; }
+        }
+        gs.currentPlayer = 1;
+        renderLocalTicTacToe();
+    }, 500);
+}
+
+function checkTicTacToeWin(player) {
+    const b = ticTacToeState.board;
+    for (let i = 0; i < 3; i++) if (b[i][0]===player && b[i][1]===player && b[i][2]===player) return true;
+    for (let j = 0; j < 3; j++) if (b[0][j]===player && b[1][j]===player && b[2][j]===player) return true;
+    if (b[0][0]===player && b[1][1]===player && b[2][2]===player) return true;
+    if (b[0][2]===player && b[1][1]===player && b[2][0]===player) return true;
+    return false;
+}
+
+function isTicTacToeDraw() {
+    for (let r=0;r<3;r++) for (let c=0;c<3;c++) if (ticTacToeState.board[r][c]===0) return false;
+    return true;
+}
+
+// ===== 斗兽棋 =====
+let animalChessState = null;
+
+function initLocalAnimalChess() {
+    animalChessState = {
+        pieces: [
+            {id:1, name:'鼠', rank:1}, {id:2, name:'猫', rank:2},
+            {id:3, name:'狗', rank:3}, {id:4, name:'狼', rank:4},
+            {id:5, name:'豹', rank:5}, {id:6, name:'狮', rank:6},
+            {id:7, name:'虎', rank:7}, {id:8, name:'象', rank:8}
+        ],
+        playerPieces: [1,3,5,7],
+        aiPieces: [2,4,6,8],
+        board: [],
+        currentPlayer: 'player',
+        selected: null,
+        gameOver: false,
+        winner: null
+    };
+    
+    animalChessState.board = [
+        [8, 6, 4, 2],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [7, 5, 3, 1]
+    ];
+}
+
+function renderLocalAnimalChess() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    const gs = animalChessState;
+    const pieces = {1:'鼠',2:'猫',3:'狗',4:'狼',5:'豹',6:'狮',7:'虎',8:'象'};
+    
+    let html = '<div style="max-width:350px;margin:0 auto;padding:10px;">';
+    html += '<h3 style="text-align:center;margin-bottom:10px;">🦁 斗兽棋</h3>';
+    html += '<p style="text-align:center;margin-bottom:10px;color:var(--accent-primary);">'+(gs.currentPlayer === 'player' ? '你的回合' : 'AI思考中...')+'</p>';
+    html += '<p style="text-align:center;font-size:12px;color:var(--text-secondary);margin-bottom:10px;">规则：大吃小，象最大(8)，鼠最小(1)。同等级平局。</p>';
+    
+    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;background:#228B22;padding:10px;border-radius:12px;">';
+    for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 4; c++) {
+            const v = gs.board[r][c];
+            const isPlayer = v > 0 && gs.playerPieces.includes(Math.abs(v));
+            const border = gs.selected && gs.selected.r === r && gs.selected.c === c ? '3px solid #e94560' : '2px solid #228B22';
+            let bg = '#3CB371';
+            if (v > 0) {
+                bg = isPlayer ? '#e94560' : '#3498db';
+            }
+            let piece = '';
+            if (v !== 0) {
+                const pieceName = pieces[Math.abs(v)];
+                const emoji = isPlayer ? '🔴' : '🔵';
+                piece = '<div style="text-align:center;"><div style="font-size:20px;">'+emoji+'</div><div style="font-size:10px;color:#fff;">'+pieceName+'</div></div>';
+            }
+            html += '<div onclick="animalClick('+r+','+c+')" style="aspect-ratio:1;background:'+bg+';'+border+';border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:60px;">'+piece+'</div>';
+        }
+    }
+    html += '</div>';
+    
+    if (gs.gameOver) {
+        html += '<div style="text-align:center;margin-top:15px;"><p style="font-size:20px;">'+(gs.winner === 'player' ? '🎉 你赢了！' : '😤 AI赢了！')+'</p><button class="btn btn-primary" onclick="showGameMenu(\'animalChess\')">再来一局</button></div>';
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function animalClick(r, c) {
+    const gs = animalChessState;
+    if (gs.gameOver || gs.currentPlayer !== 'player') return;
+    
+    const v = gs.board[r][c];
+    if (v > 0 && gs.playerPieces.includes(v)) {
+        gs.selected = {r, c};
+        renderLocalAnimalChess();
+        return;
+    }
+    
+    if (gs.selected) {
+        const {r: sr, c: sc} = gs.selected;
+        if (canAnimalMove(sr, sc, r, c, 'player')) {
+            if (v !== 0 && gs.aiPieces.includes(Math.abs(v))) {
+                const myRank = gs.playerPieces.indexOf(v) + 1;
+                const aiRank = gs.aiPieces.indexOf(Math.abs(v)) + 1;
+                if (myRank >= aiRank) {
+                    gs.board[r][c] = gs.board[sr][sc];
+                    gs.board[sr][sc] = 0;
+                    let aiLeft = gs.board.flat().filter(x => x > 0 && gs.aiPieces.includes(x)).length;
+                    if (aiLeft === 0) { gs.gameOver = true; gs.winner = 'player'; }
+                }
+            } else if (v === 0) {
+                gs.board[r][c] = gs.board[sr][sc];
+                gs.board[sr][sc] = 0;
+            }
+            gs.selected = null;
+            gs.currentPlayer = 'ai';
+            renderLocalAnimalChess();
+            setTimeout(animalAIMove, 500);
+            return;
+        }
+    }
+}
+
+function canAnimalMove(sr, sc, dr, dc, player) {
+    const dr2 = Math.abs(dr - sr);
+    const dc2 = Math.abs(dc - sc);
+    if (dr2 + dc2 !== 1) return false;
+    return true;
+}
+
+function animalAIMove() {
+    const gs = animalChessState;
+    const moves = [];
+    for (let r = 0; r < 4; r++)
+        for (let c = 0; c < 4; c++)
+            if (gs.board[r][c] > 0 && gs.aiPieces.includes(gs.board[r][c]))
+                for (let dr = 0; dr < 4; dr++)
+                    for (let dc = 0; dc < 4; dc++)
+                        if (canAnimalMove(r, c, dr, dc, 'ai')) {
+                            const target = gs.board[dr][dc];
+                            let score = Math.random();
+                            if (target > 0 && gs.playerPieces.includes(target)) {
+                                const aiRank = gs.aiPieces.indexOf(Math.abs(gs.board[r][c])) + 1;
+                                const pRank = gs.playerPieces.indexOf(target) + 1;
+                                if (aiRank >= pRank) score += 10;
+                            }
+                            moves.push({from:{r,c}, to:{r:dr,c:dc}, score});
+                        }
+    
+    if (moves.length === 0) { gs.gameOver = true; gs.winner = 'player'; renderLocalAnimalChess(); return; }
+    moves.sort((a,b) => b.score - a.score);
+    const m = moves[0];
+    gs.board[m.to.r][m.to.c] = gs.board[m.from.r][m.from.c];
+    gs.board[m.from.r][m.from.c] = 0;
+    
+    let playerLeft = gs.board.flat().filter(x => x > 0 && gs.playerPieces.includes(x)).length;
+    if (playerLeft === 0) { gs.gameOver = true; gs.winner = 'ai'; }
+    
+    gs.currentPlayer = 'player';
+    renderLocalAnimalChess();
+}
+
+// ===== 军棋 =====
+let militaryChessState = null;
+
+function initLocalMilitaryChess() {
+    militaryChessState = {
+        board: Array(6).fill(null).map(() => Array(5).fill(0)),
+        playerPieces: [25,23,21,19,17,15,13,10,9,1,24,22,20,18,16,14,12,11,8],
+        aiPieces: [],
+        hiddenMode: true,
+        currentPlayer: 'player',
+        selected: null,
+        gameOver: false,
+        winner: null,
+        moveCount: 0
+    };
+    
+    militaryChessState.board[5] = [25, 23, 21, 19, 17];
+    militaryChessState.board[4] = [15, 13, 10, 9, 1];
+    militaryChessState.board[0] = [24, 22, 20, 18, 16];
+    militaryChessState.board[1] = [14, 12, 11, 8, 1];
+}
+
+function renderLocalMilitaryChess() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    const gs = militaryChessState;
+    
+    const pieceNames = {
+        25:'司',24:'军',23:'师',22:'师',21:'旅',20:'旅',19:'团',18:'团',
+        17:'连',16:'连',15:'排',14:'排',13:'工',12:'工',11:'工',10:'炸',9:'雷',8:'雷',1:'旗'
+    };
+    
+    let html = '<div style="max-width:380px;margin:0 auto;padding:10px;">';
+    html += '<h3 style="text-align:center;margin-bottom:10px;">🎖️ 军棋</h3>';
+    html += '<div style="display:flex;justify-content:center;gap:10px;margin-bottom:10px;">';
+    html += '<button onclick="toggleMilitaryMode()" style="padding:8px 15px;background:'+(gs.hiddenMode ? 'var(--accent-primary)' : 'var(--glass-bg)')+';color:#fff;border:none;border-radius:15px;font-size:12px;cursor:pointer;">'+(gs.hiddenMode ? '🔒 盲棋' : '👁️ 明棋')+'</button>';
+    html += '</div>';
+    html += '<p style="text-align:center;margin-bottom:10px;color:var(--accent-primary);">'+(gs.currentPlayer === 'player' ? '你的回合' : 'AI思考中...')+'</p>';
+    
+    html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:2px;background:#654321;padding:8px;border-radius:12px;">';
+    for (let r = 0; r < 6; r++) {
+        for (let c = 0; c < 5; c++) {
+            const v = gs.board[r][c];
+            const isPlayer = v > 0;
+            const border = gs.selected && gs.selected.r === r && gs.selected.c === c ? '3px solid #e94560' : '1px solid #654321';
+            
+            let cell = '';
+            if (v === 0) {
+                cell = '<div style="aspect-ratio:1;background:#DEB887;'+border+';border-radius:4px;cursor:pointer;"></div>';
+            } else if (gs.hiddenMode && !isPlayer) {
+                cell = '<div onclick="militaryClick('+r+','+c+')" style="aspect-ratio:1;background:linear-gradient(135deg,#8B0000,#CD5C5C);'+border+';border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:12px;">?</div>';
+            } else {
+                const name = pieceNames[Math.abs(v)] || '?';
+                const bg = isPlayer ? '#e94560' : '#3498db';
+                cell = '<div onclick="militaryClick('+r+','+c+')" style="aspect-ratio:1;background:'+bg+';'+border+';border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:18px;font-weight:bold;">'+name+'</div>';
+            }
+            html += cell;
+        }
+    }
+    html += '</div>';
+    
+    html += '<div style="margin-top:15px;padding:10px;background:var(--glass-bg);border-radius:10px;">';
+    html += '<small>你的棋子（点击移动）：</small>';
+    html += '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;">';
+    for (let r = 4; r <= 5; r++)
+        for (let c = 0; c < 5; c++)
+            if (gs.board[r][c] > 0)
+                html += '<div onclick="militarySelect('+r+','+c+')" style="width:40px;height:40px;background:#e94560;border-radius:5px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;cursor:pointer;">'+pieceNames[gs.board[r][c]]+'</div>';
+    html += '</div></div>';
+    
+    if (gs.gameOver) {
+        html += '<div style="text-align:center;margin-top:15px;"><p style="font-size:20px;">'+(gs.winner === 'player' ? '🎉 你赢了！' : '😤 AI赢了！')+'</p><button class="btn btn-primary" onclick="showGameMenu(\'militaryChess\')">再来一局</button></div>';
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function militaryClick(r, c) {
+    const gs = militaryChessState;
+    if (gs.gameOver || gs.currentPlayer !== 'player') return;
+    
+    const v = gs.board[r][c];
+    
+    if (v > 0) {
+        gs.selected = {r, c};
+        renderLocalMilitaryChess();
+        return;
+    }
+    
+    if (gs.selected) {
+        const {r: sr, c: sc} = gs.selected;
+        if (Math.abs(r - sr) === 1 && c === sc) {
+            gs.board[r][c] = gs.board[sr][sc];
+            gs.board[sr][sc] = 0;
+            gs.selected = null;
+            gs.currentPlayer = 'ai';
+            gs.moveCount++;
+            renderLocalMilitaryChess();
+            setTimeout(militaryAIMove, 500);
+            return;
+        }
+    }
+}
+
+function militarySelect(r, c) {
+    militaryChessState.selected = {r, c};
+    renderLocalMilitaryChess();
+}
+
+function toggleMilitaryMode() {
+    militaryChessState.hiddenMode = !militaryChessState.hiddenMode;
+    renderLocalMilitaryChess();
+}
+
+function militaryAIMove() {
+    const gs = militaryChessState;
+    const aiPieces = [];
+    for (let r = 0; r <= 1; r++)
+        for (let c = 0; c < 5; c++)
+            if (gs.board[r][c] > 0) aiPieces.push({r, c});
+    
+    if (aiPieces.length === 0) { gs.gameOver = true; gs.winner = 'player'; renderLocalMilitaryChess(); return; }
+    
+    const piece = aiPieces[Math.floor(Math.random() * aiPieces.length)];
+    gs.board[piece.r][piece.c] = 0;
+    gs.board[piece.r - 1][piece.c] = 1;
+    gs.currentPlayer = 'player';
+    renderLocalMilitaryChess();
+}
+
+// ===== 台球 =====
+let billiardsState = null;
+
+function initLocalBilliards() {
+    billiardsState = {
+        balls: [
+            {id:1, x:200, y:200, vx:0, vy:0, color:'#fff', pocketed:false},
+            {id:2, x:400, y:300, vx:0, vy:0, color:'#f1c40f', pocketed:false},
+            {id:3, x:450, y:280, vx:0, vy:0, color:'#3498db', pocketed:false},
+            {id:4, x:500, y:300, vx:0, vy:0, color:'#e74c3c', pocketed:false},
+            {id:5, x:475, y:320, vx:0, vy:0, color:'#9b59b6', pocketed:false},
+        ],
+        width: 400,
+        height: 250,
+        aiming: true,
+        playerTurn: true,
+        gameOver: false,
+        message: '点击白球瞄准，再点击方向发球！'
+    };
+}
+
+function renderLocalBilliards() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    const gs = billiardsState;
+    
+    let html = '<div style="max-width:420px;margin:0 auto;padding:10px;">';
+    html += '<h3 style="text-align:center;margin-bottom:10px;">🎱 台球</h3>';
+    html += '<p style="text-align:center;margin-bottom:10px;color:var(--accent-primary);">'+gs.message+'</p>';
+    
+    html += '<div style="background:linear-gradient(145deg,#0a5c0a,#1a8a1a);padding:15px;border-radius:15px;box-shadow:0 8px 20px rgba(0,0,0,0.4);position:relative;">';
+    html += '<div style="background:#1a6b1a;height:'+(gs.height+30)+'px;border-radius:10px;position:relative;overflow:hidden;border:8px solid #8B4513;">';
+    
+    const pockets = [[0,0],[200,0],[400,0],[0,250],[200,250],[400,250]];
+    pockets.forEach(([px,py]) => {
+        html += '<div style="position:absolute;left:'+px+'px;top:'+py+'px;width:20px;height:20px;background:#111;border-radius:50%;"></div>';
+    });
+    
+    gs.balls.forEach(ball => {
+        if (!ball.pocketed) {
+            html += '<div onclick="billiardsClick('+ball.id+')" style="position:absolute;left:'+(ball.x-8)+'px;top:'+(ball.y-8)+'px;width:16px;height:16px;background:radial-gradient(circle at 30% 30%,'+ball.color+',#000);border-radius:50%;box-shadow:1px 1px 3px rgba(0,0,0,0.5);cursor:pointer;"></div>';
+        }
+    });
+    
+    html += '</div></div>';
+    
+    const pocketed = gs.balls.filter(b => b.pocketed && b.id !== 1).length;
+    html += '<div style="text-align:center;margin-top:15px;padding:10px;background:var(--glass-bg);border-radius:10px;">';
+    html += '<p>进球数: <span style="color:#f39c12;font-size:24px;font-weight:bold;">'+pocketed+'</span></p>';
+    html += '<button onclick="initLocalBilliards()" style="padding:10px 20px;background:var(--accent-primary);color:#fff;border:none;border-radius:15px;cursor:pointer;margin-top:10px;">重新开始</button>';
+    html += '</div>';
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function billiardsClick(id) {
+    const gs = billiardsState;
+    if (id === 1 && gs.aiming && gs.playerTurn) {
+        billiardsTarget = 1;
+        gs.message = '现在点击白球拖动瞄准方向！';
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 5;
+        gs.balls[0].vx = Math.cos(angle) * speed;
+        gs.balls[0].vy = Math.sin(angle) * speed;
+        gs.playerTurn = false;
+        gs.message = '白球已发出！';
+        animateBilliards();
+    }
+}
+
+function animateBilliards() {
+    const gs = billiardsState;
+    let moving = true;
+    
+    function step() {
+        if (!moving) return;
+        
+        moving = false;
+        gs.balls.forEach(ball => {
+            if (ball.pocketed) return;
+            
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            
+            ball.vx *= 0.98;
+            ball.vy *= 0.98;
+            
+            if (Math.abs(ball.vx) > 0.1 || Math.abs(ball.vy) > 0.1) moving = true;
+            else { ball.vx = 0; ball.vy = 0; }
+            
+            if (ball.x < 10) { ball.x = 10; ball.vx = -ball.vx; }
+            if (ball.x > gs.width - 10) { ball.x = gs.width - 10; ball.vx = -ball.vx; }
+            if (ball.y < 10) { ball.y = 10; ball.vy = -ball.vy; }
+            if (ball.y > gs.height - 10) { ball.y = gs.height - 10; ball.vy = -ball.vy; }
+            
+            const pockets = [[10,10],[200,10],[390,10],[10,240],[200,240],[390,240]];
+            pockets.forEach(([px,py]) => {
+                const dist = Math.sqrt((ball.x-px)**2 + (ball.y-py)**2);
+                if (dist < 15) {
+                    ball.pocketed = true;
+                    ball.vx = 0; ball.vy = 0;
+                }
+            });
+        });
+        
+        renderLocalBilliards();
+        
+        if (moving) {
+            setTimeout(step, 50);
+        } else {
+            if (gs.balls[0].pocketed) {
+                gs.balls[0].pocketed = false;
+                gs.balls[0].x = 200;
+                gs.balls[0].y = 200;
+                gs.message = '白球落袋，重新发球！';
+            }
+            gs.playerTurn = true;
+            gs.message = '你的回合，点击白球发球！';
+            renderLocalBilliards();
+        }
+    }
+    
+    step();
 }
 
     </script>
