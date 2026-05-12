@@ -5997,27 +5997,16 @@ function douDiZhuPlay() {
 
         function selectLanguage(code) {
             selectedLang = code;
-            // 同时更新 i18n 系统的语言
-            if (typeof currentLang !== 'undefined') {
-                currentLang = code;
-            }
-            if (typeof applyLanguage === 'function') {
-                applyLanguage(code);
-            }
+            // 高亮选中
             renderCountries(document.getElementById('country-search').value);
             document.getElementById('confirm-lang-btn').disabled = false;
         }
 
         function confirmLanguage() {
             if (selectedLang) {
-                // 保存语言设置
+                // 保存
                 localStorage.setItem('selectedLang', selectedLang);
-                if (typeof currentLang !== 'undefined') {
-                    currentLang = selectedLang;
-                }
-                if (typeof applyLanguage === 'function') {
-                    applyLanguage(selectedLang);
-                }
+                // 切换到登录页
                 switchPage('login-page');
             }
         }
@@ -6738,13 +6727,257 @@ function initLocalCheckers() { initLocalGomoku(); localGameState.isChess = true;
 
 // 通用渲染
 function renderLocalGame() {
+    // 先隐藏placeholder
+    const placeholder = document.querySelector('#game-room-page .game-board-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
+    
     switch(localGameType) {
         case 'gomoku': renderLocalGomoku(); break;
         case 'othello': renderLocalOthello(); break;
+        case 'chess': renderLocalChess(); break;
+        case 'chineseChess': renderLocalChineseChess(); break;
+        case 'go': renderLocalGo(); break;
+        case 'checkers': renderLocalCheckers(); break;
+        case 'flightChess': renderLocalFlightChess(); break;
         case 'poker': renderLocalPoker(); break;
-        default: renderLocalGomoku(); break;
+        case 'texasHoldem': renderLocalTexasHoldem(); break;
+        case 'zhaJinHua': renderLocalZhaJinHua(); break;
+        case 'douDiZhu': renderLocalDouDiZhu(); break;
+        default: 
+            document.getElementById('game-board').innerHTML = '<div style="text-align:center;padding:50px;"><h2>游戏开发中...</h2><button class="btn btn-primary" onclick="showGameMenu(localGameType)" style="margin-top:20px;">返回</button></div>';
     }
 }
+
+// ===== 中国象棋 AI =====
+function initLocalChineseChess() {
+    // 红方(玩家)在下方，黑方在上方
+    localGameState = {
+        board: [
+            ['r','n','b','a','k','a','b','n','r'], // 黑方(0)
+            [0,0,0,0,0,0,0,0,0],                    // 行1
+            [0,'c',0,0,0,0,0,'c',0],               // 行2
+            ['p',0,'p',0,'p',0,'p',0,'p'],        // 行3
+            [0,0,0,0,0,0,0,0,0],                    // 行4
+            [0,0,0,0,0,0,0,0,0],                    // 行5
+            ['P',0,'P',0,'P',0,'P',0,'P'],        // 行6
+            [0,'C',0,0,0,0,0,'C',0],               // 行7
+            [0,0,0,0,0,0,0,0,0],                    // 行8
+            ['R','N','B','A','K','A','B','N','R']  // 红方(9)
+        ],
+        currentPlayer: 'red', // 玩家先手
+        selected: null,
+        gameOver: false,
+        winner: null
+    };
+}
+
+function renderLocalChineseChess() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    const gs = localGameState;
+    
+    const pieceChars = {
+        'k':'将','a':'士','b':'象','n':'马','r':'车','c':'炮','p':'兵',
+        'K':'帅','A':'仕','B':'相','N':'馬','R':'俥','C':'砲','P':'卒'
+    };
+    const isRed = (p) => p && p === p.toUpperCase();
+    const isBlack = (p) => p && p === p.toLowerCase();
+    
+    let html = '<div style="max-width:360px;margin:0 auto;">';
+    html += '<div style="text-align:center;margin-bottom:10px;padding:8px;background:var(--glass-bg);border-radius:10px;">';
+    html += `<span style="color:${gs.currentPlayer==='red'?'#e94560':'#fff'};font-weight:bold;">红方</span>`;
+    html += ' <span style="margin:0 10px;">vs</span> ';
+    html += `<span style="color:${gs.currentPlayer==='black'?'#e94560':'#fff'};font-weight:bold;">黑方(AI)</span>`;
+    html += '</div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(9,1fr);gap:2px;background:#8B4513;padding:10px;border-radius:10px;">';
+    
+    for (let r = 0; r < 10; r++) {
+        for (let c = 0; c < 9; c++) {
+            const p = gs.board[r][c];
+            const isPiece = p !== 0;
+            const red = isPiece && isRed(p);
+            const bg = (r + c) % 2 === 0 ? '#DEB887' : '#C4A574';
+            const border = gs.selected && gs.selected.r === r && gs.selected.c === c ? '3px solid #e94560' : '1px solid #654321';
+            
+            html += `<div onclick="chessClick(${r},${c})" style="aspect-ratio:1;background:${bg};border:${border};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:bold;color:${red?'#c00':'#000'};cursor:pointer;${isPiece?'text-shadow:1px 1px 2px rgba(0,0,0,0.5);':''}">${isPiece ? pieceChars[p] : ''}</div>`;
+        }
+    }
+    html += '</div></div>';
+    
+    if (gs.gameOver) {
+        let msg = gs.winner === 'red' ? '🎉 你赢了！' : '😤 AI赢了！';
+        html += `<div style="text-align:center;margin-top:15px;"><p style="font-size:20px;margin-bottom:10px;">${msg}</p><button class="btn btn-primary" onclick="showGameMenu('${localGameType}')">再来一局</button></div>`;
+    }
+    
+    container.innerHTML = html;
+}
+
+function chessClick(r, c) {
+    const gs = localGameState;
+    if (gs.gameOver || gs.currentPlayer !== 'red') return;
+    
+    const p = gs.board[r][c];
+    // 点击自己的棋子
+    if (p && p === p.toUpperCase()) {
+        gs.selected = {r, c};
+        renderLocalChineseChess();
+        return;
+    }
+    
+    // 移动棋子
+    if (gs.selected) {
+        const {r: sr, c: sc} = gs.selected;
+        if (isValidChessMove(sr, sc, r, c, 'red')) {
+            gs.board[r][c] = gs.board[sr][sc];
+            gs.board[sr][sc] = 0;
+            gs.selected = null;
+            gs.currentPlayer = 'black';
+            renderLocalChineseChess();
+            setTimeout(chessAIMove, 500);
+            return;
+        }
+    }
+}
+
+function isValidChessMove(sr, sc, dr, dc, player) {
+    const p = localGameState.board[sr][sc];
+    if (!p) return false;
+    const isRed = player === 'red';
+    const piece = isRed ? p.toUpperCase() : p.toLowerCase();
+    
+    // 基础移动规则简化版
+    switch(piece) {
+        case 'K': case 'k': // 将/帅
+            return Math.abs(dr-sr) + Math.abs(dc-sc) === 1 && dc >= 3 && dc <= 5 && dr >= (isRed?7:0) && dr <= (isRed?9:2);
+        case 'R': case 'r': // 车
+            return (dr === sr || dc === sc) && isPathClear(sr, sc, dr, dc);
+        case 'N': case 'n': // 马
+            return (Math.abs(dr-sr)===2 && Math.abs(dc-sc)===1 || Math.abs(dr-sr)===1 && Math.abs(dc-sc)===2) && !localGameState.board[sr + (dr-sr)/2][sc + (dc-sc)/2];
+        case 'B': case 'b': // 相/象
+            if (Math.abs(dr-sr) !== 2 || Math.abs(dc-sc) !== 2) return false;
+            const mx = (sr+dr)/2, my = (sc+dc)/2;
+            if (isRed && dr > 4) return false; // 相不过河
+            if (!isRed && dr < 5) return false; // 象过河
+            return localGameState.board[mx][my] === 0;
+        case 'A': case 'a': // 士
+            return Math.abs(dr-sr)===1 && Math.abs(dc-sc)===1 && dc >= 3 && dc <= 5 && dr >= (isRed?7:0) && dr <= (isRed?9:2);
+        case 'C': case 'c': // 炮
+            if (dr === sr || dc === sc) {
+                const count = countPiecesBetween(sr, sc, dr, dc);
+                if (count === 0) return true;
+                if (count === 1 && localGameState.board[dr][dc] !== 0) return true;
+            }
+            return false;
+        case 'P': case 'p': // 兵/卒
+            const crossed = isRed ? sr > dr : sr < dr;
+            if (!crossed && dr !== sr) return false;
+            if (crossed) return Math.abs(dc-sc) + Math.abs(dr-sr) === 1;
+            return dc === sc && Math.abs(dr-sr) === 1;
+        default: return false;
+    }
+}
+
+function isPathClear(sr, sc, dr, dc) {
+    if (dr === sr) {
+        const min = Math.min(sc, dc), max = Math.max(sc, dc);
+        for (let c = min+1; c < max; c++) if (localGameState.board[sr][c] !== 0) return false;
+    } else {
+        const min = Math.min(sr, dr), max = Math.max(sr, dr);
+        for (let r = min+1; r < max; r++) if (localGameState.board[r][sc] !== 0) return false;
+    }
+    return true;
+}
+
+function countPiecesBetween(sr, sc, dr, dc) {
+    let count = 0;
+    if (dr === sr) {
+        const min = Math.min(sc, dc), max = Math.max(sc, dc);
+        for (let c = min+1; c < max; c++) if (localGameState.board[sr][c] !== 0) count++;
+    } else {
+        const min = Math.min(sr, dr), max = Math.max(sr, dr);
+        for (let r = min+1; r < max; r++) if (localGameState.board[r][sc] !== 0) count++;
+    }
+    return count;
+}
+
+function chessAIMove() {
+    const gs = localGameState;
+    const moves = [];
+    for (let r = 0; r < 10; r++)
+        for (let c = 0; c < 9; c++)
+            if (gs.board[r][c] && gs.board[r][c] === gs.board[r][c].toLowerCase())
+                for (let dr = 0; dr < 10; dr++)
+                    for (let dc = 0; dc < 9; dc++)
+                        if (isValidChessMove(r, c, dr, dc, 'black')) {
+                            moves.push({from:{r,c}, to:{r:dr,c:dc}, 
+                                score: gs.board[dr][dc] !== 0 ? getPieceValue(gs.board[dr][dc]) : Math.random()});
+                        }
+    
+    if (moves.length === 0) { gs.gameOver = true; gs.winner = 'red'; renderLocalChineseChess(); return; }
+    
+    moves.sort((a,b) => b.score - a.score);
+    const top = Math.min(3, moves.length);
+    const move = moves[Math.floor(Math.random() * top)];
+    gs.board[move.to.r][move.to.c] = gs.board[move.from.r][move.from.c];
+    gs.board[move.from.r][move.from.c] = 0;
+    gs.currentPlayer = 'red';
+    renderLocalChineseChess();
+}
+
+function getPieceValue(p) {
+    const v = p.toUpperCase();
+    return {'K':1000,'R':90,'N':50,'B':40,'A':20,'C':45,'P':10}[v] || 0;
+}
+
+// ===== 其他游戏简化版 =====
+function initLocalChess() { initLocalChineseChess(); }
+function initLocalGo() {
+    localGameState = { board: Array(9).fill(null).map(()=>Array(9).fill(0)), currentPlayer: 1, gameOver: false };
+    renderLocalGo();
+}
+function renderLocalGo() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    let html = '<div style="max-width:320px;margin:0 auto;"><h3 style="text-align:center;margin-bottom:10px;">围棋 - 9路围棋</h3>';
+    html += '<div style="display:grid;grid-template-columns:repeat(9,1fr);gap:1px;background:#654321;padding:5px;border-radius:8px;">';
+    for (let r = 0; r < 9; r++) {
+        for (let c = 0; c < 9; c++) {
+            const v = localGameState.board[r][c];
+            const bg = v === 1 ? '#111' : v === 2 ? '#eee' : '#DEB887';
+            html += `<div onclick="goClick(${r},${c})" style="aspect-ratio:1;background:${bg};border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;"></div>`;
+        }
+    }
+    html += '</div>';
+    if (localGameState.gameOver) html += '<p style="text-align:center;margin-top:10px;">游戏结束！<button class="btn btn-primary" onclick="showGameMenu(\'go\')">再来</button></p>';
+    html += '</div>';
+    container.innerHTML = html;
+}
+function goClick(r,c) {
+    if (localGameState.gameOver || localGameState.board[r][c] !== 0 || localGameState.currentPlayer !== 1) return;
+    localGameState.board[r][c] = 1;
+    localGameState.currentPlayer = 2;
+    renderLocalGo();
+    setTimeout(() => {
+        // AI随机走
+        const empties = [];
+        for (let r=0;r<9;r++) for (let c=0;c<9;c++) if (localGameState.board[r][c]===0) empties.push({r,c});
+        if (empties.length === 0) { localGameState.gameOver = true; }
+        else { const m = empties[Math.floor(Math.random()*empties.length)]; localGameState.board[m.r][m.c] = 2; }
+        localGameState.currentPlayer = 1;
+        renderLocalGo();
+    }, 300);
+}
+function initLocalCheckers() { initLocalOthello(); renderLocalCheckers(); }
+function renderLocalCheckers() { initLocalOthello(); renderLocalOthello(); }
+function initLocalFlightChess() {
+    document.getElementById('game-board').innerHTML = '<div style="text-align:center;padding:50px;"><h2>🎲 飞行棋</h2><p style="margin:20px 0;color:var(--text-secondary);">飞行棋开发中...</p><button class="btn btn-primary" onclick="showGameMenu(\'flightChess\')">返回</button></div>';
+}
+function initLocalTexasHoldem() { initLocalPoker(); renderLocalPoker(); }
+function initLocalZhaJinHua() { initLocalPoker(); renderLocalPoker(); }
+function initLocalDouDiZhu() { initLocalPoker(); renderLocalPoker(); }
+function renderLocalTexasHoldem() { initLocalPoker(); renderLocalPoker(); }
+function renderLocalZhaJinHua() { initLocalPoker(); renderLocalPoker(); }
+function renderLocalDouDiZhu() { initLocalPoker(); renderLocalPoker(); }
 
     </script>
 
