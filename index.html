@@ -6235,6 +6235,47 @@ let localGameState = null;
 let localGameType = '';
 let localDifficulty = 'normal';
 let localPlayerColor = 'black';
+let localGameMode = 'ai'; // 'ai' 或 'twoPlayer'
+
+function startTwoPlayer() {
+    closeGameMenu();
+    localGameMode = 'twoPlayer'; // 设置双人模式
+    startLocalTwoPlayerGame(selectedGameType);
+}
+
+function startLocalTwoPlayerGame(gameType) {
+    localGameType = gameType;
+    localGameMode = 'twoPlayer';
+    
+    switch(gameType) {
+        case 'gomoku': initLocalGomoku(); break;
+        case 'othello': initLocalOthello(); break;
+        case 'chess': initLocalChess(); break;
+        case 'chineseChess': initLocalChineseChess(); break;
+        case 'go': initLocalGo(); break;
+        case 'checkers': initLocalCheckers(); break;
+        case 'ticTacToe': initLocalTicTacToe(); break;
+        default:
+            alert('该游戏暂不支持双人对战');
+            return;
+    }
+    
+    // 切换到游戏房间页
+    switchPage('game-room-page');
+    
+    // 隐藏侧边栏
+    const sidebar = document.querySelector('#game-room-page .sidebar');
+    if (sidebar) sidebar.style.display = 'none';
+    const gameArea = document.querySelector('#game-room-page .game-area');
+    if (gameArea) {
+        gameArea.style.flex = '1';
+        gameArea.style.minHeight = '60vh';
+        gameArea.style.alignItems = 'center';
+        gameArea.style.justifyContent = 'center';
+    }
+    
+    setTimeout(() => renderLocalGame(), 100);
+}
 
 function startLocalAIGame(gameType, difficulty) {
     localGameType = gameType;
@@ -6347,32 +6388,38 @@ function renderLocalGomoku() {
 }
 
 function localGomokuClick(r, c) {
-    if (localGameState.gameOver || localGameState.currentPlayer !== 1) return;
+    if (localGameState.gameOver) return;
     if (localGameState.board[r][c] !== 0) return;
-
-    localGameState.board[r][c] = 1;
-    if (checkGomokuWin(r, c, 1)) {
+    
+    const current = localGameState.currentPlayer;
+    localGameState.board[r][c] = current;
+    
+    if (checkGomokuWin(r, c, current)) {
         localGameState.gameOver = true;
-        localGameState.winner = 1;
+        localGameState.winner = current;
         renderLocalGomoku();
         return;
     }
-
-    localGameState.currentPlayer = 2;
+    
+    // 切换玩家
+    localGameState.currentPlayer = current === 1 ? 2 : 1;
     renderLocalGomoku();
-
-    setTimeout(() => {
-        const move = calculateGomokuAI();
-        if (move) {
-            localGameState.board[move.r][move.c] = 2;
-            if (checkGomokuWin(move.r, move.c, 2)) {
-                localGameState.gameOver = true;
-                localGameState.winner = 2;
+    
+    // 如果是AI模式且轮到AI
+    if (localGameMode === 'ai' && localGameState.currentPlayer === 2 && !localGameState.gameOver) {
+        setTimeout(() => {
+            const move = calculateGomokuAI();
+            if (move) {
+                localGameState.board[move.r][move.c] = 2;
+                if (checkGomokuWin(move.r, move.c, 2)) {
+                    localGameState.gameOver = true;
+                    localGameState.winner = 2;
+                }
+                localGameState.currentPlayer = 1;
+                renderLocalGomoku();
             }
-        }
-        localGameState.currentPlayer = 1;
-        renderLocalGomoku();
-    }, 300);
+        }, 300);
+    }
 }
 
 function checkGomokuWin(r, c, player) {
@@ -6522,30 +6569,36 @@ function getOthelloFlips(r, c, player) {
 }
 
 function localOthelloClick(r, c) {
-    if (localGameState.gameOver || localGameState.currentPlayer !== 1) return;
-    const flips = getOthelloFlips(r, c, 1);
+    if (localGameState.gameOver) return;
+    const current = localGameState.currentPlayer;
+    const flips = getOthelloFlips(r, c, current);
     if (flips.length === 0) return;
 
-    localGameState.board[r][c] = 1;
-    for (const [fr,fc] of flips) localGameState.board[fr][fc] = 1;
+    localGameState.board[r][c] = current;
+    for (const [fr,fc] of flips) localGameState.board[fr][fc] = current;
 
-    localGameState.currentPlayer = 2;
+    // 切换玩家
+    const nextPlayer = current === 1 ? 2 : 1;
+    localGameState.currentPlayer = nextPlayer;
     renderLocalOthello();
 
-    setTimeout(() => {
-        othelloAIMove();
-        localGameState.currentPlayer = 1;
-        let hasMove = false;
-        for (let r = 0; r < 8 && !hasMove; r++)
-            for (let c = 0; c < 8 && !hasMove; c++)
-                if (getOthelloFlips(r,c,1).length > 0) hasMove = true;
-        if (!hasMove) {
-            localGameState.currentPlayer = 2;
-            setTimeout(() => { othelloAIMove(); localGameState.currentPlayer = 1; renderLocalOthello(); }, 300);
-            return;
-        }
-        renderLocalOthello();
-    }, 400);
+    // 如果是AI模式且轮到AI
+    if (localGameMode === 'ai' && nextPlayer === 2 && !localGameState.gameOver) {
+        setTimeout(() => {
+            othelloAIMove();
+            localGameState.currentPlayer = 1;
+            let hasMove = false;
+            for (let r = 0; r < 8 && !hasMove; r++)
+                for (let c = 0; c < 8 && !hasMove; c++)
+                    if (getOthelloFlips(r,c,1).length > 0) hasMove = true;
+            if (!hasMove) {
+                localGameState.currentPlayer = 2;
+                setTimeout(() => { othelloAIMove(); localGameState.currentPlayer = 1; renderLocalOthello(); }, 300);
+                return;
+            }
+            renderLocalOthello();
+        }, 400);
+    }
 }
 
 function othelloAIMove() {
@@ -6812,9 +6865,38 @@ function renderLocalChineseChess() {
 
 function chessClick(r, c) {
     const gs = localGameState;
-    if (gs.gameOver || gs.currentPlayer !== 'red') return;
+    if (gs.gameOver) return;
     
     const p = gs.board[r][c];
+    const isRedTurn = gs.currentPlayer === 'red';
+    
+    // 双人模式：检查是否是当前玩家的棋子
+    if (localGameMode === 'twoPlayer') {
+        // 点击自己的棋子
+        if (p && ((isRedTurn && p === p.toUpperCase()) || (!isRedTurn && p === p.toLowerCase()))) {
+            gs.selected = {r, c};
+            renderLocalChineseChess();
+            return;
+        }
+        
+        // 移动棋子
+        if (gs.selected) {
+            const {r: sr, c: sc} = gs.selected;
+            if (isValidChessMove(sr, sc, r, c, gs.currentPlayer)) {
+                gs.board[r][c] = gs.board[sr][sc];
+                gs.board[sr][sc] = 0;
+                gs.selected = null;
+                gs.currentPlayer = isRedTurn ? 'black' : 'red';
+                renderLocalChineseChess();
+                return;
+            }
+        }
+        return;
+    }
+    
+    // AI模式（原有逻辑）
+    if (gs.currentPlayer !== 'red') return;
+    
     // 点击自己的棋子
     if (p && p === p.toUpperCase()) {
         gs.selected = {r, c};
@@ -6913,23 +6995,35 @@ function countPiecesBetween(sr, sc, dr, dc) {
 function chessAIMove() {
     const gs = localGameState;
     const moves = [];
-    for (let r = 0; r < 10; r++)
-        for (let c = 0; c < 9; c++)
-            if (gs.board[r][c] && gs.board[r][c] === gs.board[r][c].toLowerCase())
-                for (let dr = 0; dr < 10; dr++)
-                    for (let dc = 0; dc < 9; dc++)
-                        if (isValidChessMove(r, c, dr, dc, 'black')) {
-                            moves.push({from:{r,c}, to:{r:dr,c:dc}, 
-                                score: gs.board[dr][dc] !== 0 ? getPieceValue(gs.board[dr][dc]) : Math.random()});
-                        }
     
-    if (moves.length === 0) { gs.gameOver = true; gs.winner = 'red'; renderLocalChineseChess(); return; }
+    // 收集所有黑方可能的移动
+    for (let r = 0; r < 10; r++) {
+        for (let c = 0; c < 9; c++) {
+            const p = gs.board[r][c];
+            if (p && p === p.toLowerCase()) { // 黑方棋子
+                for (let dr = 0; dr < 10; dr++) {
+                    for (let dc = 0; dc < 9; dc++) {
+                        if (isValidChessMove(r, c, dr, dc, 'black')) {
+                            moves.push({from:{r,c}, to:{r:dr,c:dc}, score: Math.random()});
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    if (moves.length === 0) { 
+        gs.gameOver = true; 
+        gs.winner = 'red'; 
+        renderLocalChineseChess(); 
+        return; 
+    }
     
     moves.sort((a,b) => b.score - a.score);
-    const top = Math.min(3, moves.length);
-    const move = moves[Math.floor(Math.random() * top)];
-    gs.board[move.to.r][move.to.c] = gs.board[move.from.r][move.from.c];
-    gs.board[move.from.r][move.from.c] = 0;
+    const m = moves[Math.floor(Math.random() * Math.min(3, moves.length))];
+    
+    gs.board[m.to.r][m.to.c] = gs.board[m.from.r][m.from.c];
+    gs.board[m.from.r][m.from.c] = 0;
     gs.currentPlayer = 'red';
     renderLocalChineseChess();
 }
@@ -7004,21 +7098,25 @@ function renderLocalGo() {
 }
 function goClick(r,c) {
     const size = 19;
-    if (localGameState.gameOver || localGameState.board[r][c] !== 0 || localGameState.currentPlayer !== 1) return;
+    if (localGameState.gameOver || localGameState.board[r][c] !== 0) return;
     
-    localGameState.board[r][c] = 1;
-    localGameState.currentPlayer = 2;
+    const current = localGameState.currentPlayer;
+    localGameState.board[r][c] = current;
+    localGameState.currentPlayer = current === 1 ? 2 : 1;
     renderLocalGo();
     
-    setTimeout(() => {
-        // AI随机走
-        const empties = [];
-        for (let i=0;i<size;i++) for (let j=0;j<size;j++) if (localGameState.board[i][j]===0) empties.push({r:i,c:j});
-        if (empties.length === 0) { localGameState.gameOver = true; }
-        else { const m = empties[Math.floor(Math.random()*empties.length)]; localGameState.board[m.r][m.c] = 2; }
-        localGameState.currentPlayer = 1;
-        renderLocalGo();
-    }, 500);
+    // 如果是AI模式且轮到AI
+    if (localGameMode === 'ai' && localGameState.currentPlayer === 2 && !localGameState.gameOver) {
+        setTimeout(() => {
+            // AI随机走
+            const empties = [];
+            for (let i=0;i<size;i++) for (let j=0;j<size;j++) if (localGameState.board[i][j]===0) empties.push({r:i,c:j});
+            if (empties.length === 0) { localGameState.gameOver = true; }
+            else { const m = empties[Math.floor(Math.random()*empties.length)]; localGameState.board[m.r][m.c] = 2; }
+            localGameState.currentPlayer = 1;
+            renderLocalGo();
+        }, 500);
+    }
 }
 function initLocalCheckers() {
     const board = Array(8).fill(null).map(() => Array(8).fill(0));
@@ -7079,7 +7177,58 @@ function renderLocalCheckers() {
 
 function checkersClick(r, c) {
     const gs = localGameState;
-    if (gs.gameOver || gs.currentPlayer !== 1) return;
+    if (gs.gameOver) return;
+    
+    const current = gs.currentPlayer;
+    const opponent = current === 1 ? 2 : 1;
+
+    // 双人模式：检查是否是当前玩家的回合和棋子
+    if (localGameMode === 'twoPlayer') {
+        // 选中自己的棋子
+        if (gs.board[r][c] === current) {
+            gs.selected = {r, c};
+            renderLocalCheckers();
+            return;
+        }
+
+        // 移动
+        if (gs.selected) {
+            const {r: sr, c: sc} = gs.selected;
+            const dr = r - sr;
+            const dc = c - sc;
+            
+            // 红方(1)向上移动，黑方(2)向下移动
+            const direction = current === 1 ? -1 : 1;
+
+            // 普通移动：斜向前一格
+            if (dr === direction && Math.abs(dc) === 1 && gs.board[r][c] === 0) {
+                gs.board[r][c] = current;
+                gs.board[sr][sc] = 0;
+                gs.selected = null;
+                gs.currentPlayer = opponent;
+                renderLocalCheckers();
+                return;
+            }
+
+            // 跳吃：斜向前两格，中间有对方棋子
+            if (Math.abs(dr) === 2 && Math.abs(dc) === 2) {
+                const mr = sr + dr/2, mc = sc + dc/2;
+                if (gs.board[mr][mc] === opponent && gs.board[r][c] === 0) {
+                    gs.board[r][c] = current;
+                    gs.board[sr][sc] = 0;
+                    gs.board[mr][mc] = 0;
+                    gs.selected = null;
+                    gs.currentPlayer = opponent;
+                    renderLocalCheckers();
+                    return;
+                }
+            }
+        }
+        return;
+    }
+
+    // AI模式（原有逻辑）
+    if (gs.currentPlayer !== 1) return;
 
     // 选中自己的棋子
     if (gs.board[r][c] === 1) {
@@ -7281,50 +7430,50 @@ function initLocalHorseRacing() {
 function renderLocalHorseRacing() {
     const container = document.getElementById('game-board');
     if (!container) return;
-    const gs = horseRacingState;
+    const gs = localGameState;
     
     let html = '<div style="max-width:380px;margin:0 auto;padding:10px;">';
     html += '<h3 style="text-align:center;margin-bottom:10px;">🏇 赛马</h3>';
-    html += `<p style="text-align:center;margin-bottom:15px;color:var(--accent-primary);">${gs.message}</p>`;
-    html += `<p style="text-align:center;margin-bottom:15px;">你的筹码: <span style="color:#f39c12;font-weight:bold;">${gs.playerChips}</span></p>`;
+    html += '<p style="text-align:center;margin-bottom:10px;color:var(--accent-primary);">'+gs.message+'</p>';
+    html += '<p style="text-align:center;margin-bottom:15px;">你的筹码: <span style="color:#f39c12;font-weight:bold;">'+gs.playerChips+'</span></p>';
     
     // 赛道
-    html += '<div style="background:#228B22;border-radius:15px;padding:10px;margin-bottom:15px;">';
+    html += '<div style="background:#228B22;padding:10px;border-radius:15px;">';
     gs.horses.forEach((horse, i) => {
         const pct = Math.min(100, (horse.pos / gs.trackLength) * 100);
         const isSelected = gs.currentHorse === i && gs.racePhase === 'betting';
         const border = isSelected ? '3px solid #f39c12' : '2px solid transparent';
-        const selBg = isSelected ? 'background:rgba(255,255,255,0.2);border-radius:10px;' : '';
         
-        html += `<div style="${selBg}padding:8px;margin-bottom:5px;">`;
-        html += `<div style="display:flex;justify-content:space-between;margin-bottom:5px;">`;
-        html += `<span style="color:#fff;font-weight:bold;">${i+1}. ${horse.name}</span>`;
-        html += `<span style="color:#f39c12;">${horse.pos}/${gs.trackLength}</span>`;
-        html += `</div>`;
-        html += `<div onclick="${gs.racePhase === 'betting' ? `selectHorse(${i})` : ''}" style="height:30px;background:#8B4513;border-radius:15px;overflow:hidden;cursor:${gs.racePhase === 'betting' ? 'pointer' : 'default'};border:${border};position:relative;">`;
-        html += `<div style="position:absolute;left:${pct}%;top:50%;transform:translate(-50%,-50%);transition:left 0.5s;">`;
-        html += `<div style="font-size:24px;">🐎</div>`;
-        html += `</div>`;
-        html += `</div>`;
-        html += `</div>`;
+        html += '<div style="background:rgba(0,0,0,0.3);padding:8px;margin-bottom:8px;border-radius:10px;">';
+        html += '<div style="display:flex;justify-content:space-between;margin-bottom:5px;">';
+        html += '<span style="color:#fff;font-weight:bold;">'+(i+1)+'. '+horse.name+'</span>';
+        html += '<span style="color:#f39c12;">'+Math.floor(horse.pos)+'/'+gs.trackLength+'</span>';
+        html += '</div>';
+        html += '<div onclick="'+(gs.racePhase === 'betting' ? 'selectHorse('+i+')' : '')+'" style="height:30px;background:#654321;border-radius:15px;overflow:hidden;cursor:'+(gs.racePhase === 'betting' ? 'pointer' : 'default')+';border:'+border+';position:relative;">';
+        html += '<div style="position:absolute;left:'+pct+'%;top:50%;transform:translate(-50%,-50%);transition:left 0.3s;">';
+        html += '<div style="font-size:24px;">🐎</div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
     });
     html += '</div>';
     
     // 下注区域
     if (gs.racePhase === 'betting') {
-        html += '<div style="background:var(--glass-bg);border-radius:15px;padding:15px;text-align:center;">';
-        html += `<p style="margin-bottom:10px;">你选择了: <span style="color:#f39c12;font-weight:bold;">${gs.horses[gs.currentHorse].name}</span></p>`;
-        html += `<p style="margin-bottom:10px;">下注金额:</p>`;
-        html += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:15px;">`;
+        html += '<div style="background:var(--glass-bg);border-radius:15px;padding:15px;text-align:center;margin-top:15px;">';
+        html += '<p style="margin-bottom:10px;">你选择了: <span style="color:#f39c12;font-weight:bold;">'+gs.horses[gs.currentHorse].name+'</span></p>';
+        html += '<p style="margin-bottom:10px;">下注金额:</p>';
+        html += '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:15px;">';
         [10, 50, 100, 200].forEach(amt => {
-            const dis = amt > gs.playerChips ? 'opacity:0.5;cursor:not-allowed;' : 'cursor:pointer;';
-            html += `<button onclick="horseRacingBet(${amt})" style="padding:10px 15px;background:${amt === gs.playerBet ? 'var(--accent-primary)' : 'var(--glass-bg)'};color:#fff;border:1px solid var(--glass-border);border-radius:10px;font-size:14px;${dis}">${amt}</button>`;
+            const dis = amt > gs.playerChips ? 'opacity:0.5;pointer-events:none;' : '';
+            const active = amt === gs.playerBet ? 'background:var(--accent-primary);' : 'background:var(--glass-bg);';
+            html += '<button onclick="horseRacingBet('+amt+')" style="padding:10px 15px;'+active+'color:#fff;border:1px solid var(--glass-border);border-radius:10px;font-size:14px;cursor:pointer;'+dis+'">'+amt+'</button>';
         });
         html += '</div>';
         
         if (gs.playerBet > 0) {
-            html += `<p style="margin-bottom:10px;">赔率 1:3，预计赢 <span style="color:#2ecc71;font-weight:bold;">${gs.playerBet * 3}</span></p>`;
-            html += `<button onclick="horseRacingStart()" style="width:100%;padding:15px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;border-radius:25px;font-size:18px;font-weight:bold;cursor:pointer;">🏁 开始比赛！</button>`;
+            html += '<p style="margin-bottom:10px;">赔率 1:3，预计赢 <span style="color:#2ecc71;font-weight:bold;">'+(gs.playerBet * 3)+'</span></p>';
+            html += '<button onclick="horseRacingStart()" style="width:100%;padding:15px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;border-radius:25px;font-size:18px;font-weight:bold;cursor:pointer;">🏁 开始比赛！</button>';
         }
         html += '</div>';
     }
@@ -7332,17 +7481,16 @@ function renderLocalHorseRacing() {
     // 比赛结果
     if (gs.racePhase === 'result') {
         const won = gs.finishOrder[0] === gs.currentHorse;
-        html += '<div style="background:var(--glass-bg);border-radius:15px;padding:20px;text-align:center;">';
+        html += '<div style="background:var(--glass-bg);border-radius:15px;padding:20px;text-align:center;margin-top:15px;">';
         if (won) {
-            html += `<h2 style="color:#2ecc71;margin-bottom:10px;">🎉 你赢了！</h2>`;
-            html += `<p style="margin-bottom:10px;">${gs.horses[gs.currentHorse].name} 第一名！</p>`;
-            html += `<p style="font-size:24px;color:#f39c12;">+${gs.playerBet * 3}</p>`;
+            html += '<h2 style="color:#2ecc71;margin-bottom:10px;">🎉 你赢了！</h2>';
+            html += '<p style="margin-bottom:10px;">'+gs.horses[gs.currentHorse].name+' 第一名！</p>';
+            html += '<p style="font-size:24px;color:#f39c12;">+'+(gs.playerBet * 3)+'</p>';
         } else {
-            html += `<h2 style="color:#e74c3c;margin-bottom:10px;">😢 你输了！</h2>`;
-            html += `<p style="margin-bottom:10px;">第一名: ${gs.horses[gs.finishOrder[0]].name}</p>`;
-            html += `<p style="color:#999;">-${gs.playerBet}</p>`;
+            html += '<h2 style="color:#e74c3c;margin-bottom:10px;">😢 你输了！</h2>';
+            html += '<p style="margin-bottom:10px;">第一名: '+gs.horses[gs.finishOrder[0]].name+'</p>';
         }
-        html += `<button onclick="showGameMenu('horseRacing')" style="margin-top:15px;padding:12px 30px;background:var(--accent-primary);color:#fff;border:none;border-radius:20px;font-size:16px;cursor:pointer;">再来一局</button>`;
+        html += '<button onclick="showGameMenu(\'horseRacing\')" style="margin-top:15px;padding:12px 30px;background:var(--accent-primary);color:#fff;border:none;border-radius:20px;font-size:16px;cursor:pointer;">再来一局</button>';
         html += '</div>';
     }
     
@@ -8021,27 +8169,31 @@ function renderLocalTicTacToe() {
 
 function tttClick(r, c) {
     const gs = localGameState;
-    if (gs.gameOver || gs.currentPlayer !== 1 || gs.board[r][c] !== 0) return;
+    if (gs.gameOver || gs.board[r][c] !== 0) return;
     
-    gs.board[r][c] = 1;
-    if (checkTicTacToeWin(1)) { gs.gameOver = true; gs.winner = 1; renderLocalTicTacToe(); return; }
+    const current = gs.currentPlayer;
+    gs.board[r][c] = current;
+    if (checkTicTacToeWin(current)) { gs.gameOver = true; gs.winner = current; renderLocalTicTacToe(); return; }
     if (isTicTacToeDraw()) { gs.gameOver = true; gs.winner = 0; renderLocalTicTacToe(); return; }
     
-    gs.currentPlayer = 2;
+    gs.currentPlayer = current === 1 ? 2 : 1;
     renderLocalTicTacToe();
     
-    setTimeout(() => {
-        const empty = [];
-        for (let r=0;r<3;r++) for (let c=0;c<3;c++) if (gs.board[r][c]===0) empty.push({r,c});
-        if (empty.length > 0) {
-            const m = empty[Math.floor(Math.random()*empty.length)];
-            gs.board[m.r][m.c] = 2;
-            if (checkTicTacToeWin(2)) { gs.gameOver = true; gs.winner = 2; }
-            else if (isTicTacToeDraw()) { gs.gameOver = true; gs.winner = 0; }
-        }
-        gs.currentPlayer = 1;
-        renderLocalTicTacToe();
-    }, 500);
+    // 如果是AI模式且轮到AI
+    if (localGameMode === 'ai' && gs.currentPlayer === 2 && !gs.gameOver) {
+        setTimeout(() => {
+            const empty = [];
+            for (let r=0;r<3;r++) for (let c=0;c<3;c++) if (gs.board[r][c]===0) empty.push({r,c});
+            if (empty.length > 0) {
+                const m = empty[Math.floor(Math.random()*empty.length)];
+                gs.board[m.r][m.c] = 2;
+                if (checkTicTacToeWin(2)) { gs.gameOver = true; gs.winner = 2; }
+                else if (isTicTacToeDraw()) { gs.gameOver = true; gs.winner = 0; }
+            }
+            gs.currentPlayer = 1;
+            renderLocalTicTacToe();
+        }, 500);
+    }
 }
 
 function checkTicTacToeWin(player) {
@@ -8202,10 +8354,17 @@ function animalAIMove() {
 // ===== 军棋 =====
 
 function initLocalMilitaryChess() {
+    // 6行5列棋盘
+    // 玩家在下(第5-6行)，AI在上(第1-2行)
     localGameState = {
-        board: Array(6).fill(null).map(() => Array(5).fill(0)),
-        playerPieces: [25,23,21,19,17,15,13,10,9,1,24,22,20,18,16,14,12,11,8],
-        aiPieces: [],
+        board: [
+            [24, 22, 20, 18, 16],  // AI第一排
+            [14, 12, 11, 8, 1],    // AI第二排
+            [0, 0, 0, 0, 0],       // 空
+            [0, 0, 0, 0, 0],       // 空
+            [15, 13, 10, 9, 1],    // 玩家第二排
+            [25, 23, 21, 19, 17]   // 玩家第一排
+        ],
         hiddenMode: true,
         currentPlayer: 'player',
         selected: null,
@@ -8213,11 +8372,6 @@ function initLocalMilitaryChess() {
         winner: null,
         moveCount: 0
     };
-    
-    localGameState.board[5] = [25, 23, 21, 19, 17];
-    localGameState.board[4] = [15, 13, 10, 9, 1];
-    localGameState.board[0] = [24, 22, 20, 18, 16];
-    localGameState.board[1] = [14, 12, 11, 8, 1];
 }
 
 function renderLocalMilitaryChess() {
@@ -8334,19 +8488,20 @@ function militaryAIMove() {
 function initLocalBilliards() {
     localGameState = {
         balls: [
-            {id:1, x:200, y:200, vx:0, vy:0, color:'#fff', pocketed:false},
-            {id:2, x:400, y:300, vx:0, vy:0, color:'#f1c40f', pocketed:false},
-            {id:3, x:450, y:280, vx:0, vy:0, color:'#3498db', pocketed:false},
-            {id:4, x:500, y:300, vx:0, vy:0, color:'#e74c3c', pocketed:false},
-            {id:5, x:475, y:320, vx:0, vy:0, color:'#9b59b6', pocketed:false},
+            {x:50, y:100, vx:0, vy:0, color:'#fff', pocketed:false}, // 白球
+            {x:250, y:80, vx:0, vy:0, color:'#f1c40f', pocketed:false}, // 黄
+            {x:280, y:100, vx:0, vy:0, color:'#3498db', pocketed:false}, // 蓝
+            {x:310, y:120, vx:0, vy:0, color:'#e74c3c', pocketed:false}, // 红
+            {x:290, y:140, vx:0, vy:0, color:'#9b59b6', pocketed:false}, // 紫
         ],
-        width: 400,
-        height: 250,
+        width: 360,
+        height: 200,
         aiming: true,
         playerTurn: true,
         gameOver: false,
-        message: '点击白球瞄准，再点击方向发球！'
+        message: '点击白球发球！'
     };
+    renderLocalBilliards();
 }
 
 function renderLocalBilliards() {
@@ -8358,23 +8513,31 @@ function renderLocalBilliards() {
     html += '<h3 style="text-align:center;margin-bottom:10px;">🎱 台球</h3>';
     html += '<p style="text-align:center;margin-bottom:10px;color:var(--accent-primary);">'+gs.message+'</p>';
     
-    html += '<div style="background:linear-gradient(145deg,#0a5c0a,#1a8a1a);padding:15px;border-radius:15px;box-shadow:0 8px 20px rgba(0,0,0,0.4);position:relative;">';
-    html += '<div style="background:#1a6b1a;height:'+(gs.height+30)+'px;border-radius:10px;position:relative;overflow:hidden;border:8px solid #8B4513;">';
+    // 台球桌 - 使用相对定位
+    const tableWidth = 360;
+    const tableHeight = 200;
+    html += '<div style="background:linear-gradient(145deg,#0a5c0a,#1a8a1a);padding:15px;border-radius:15px;box-shadow:0 8px 20px rgba(0,0,0,0.4);">';
+    html += '<div id="billiard-table" style="background:#1a6b1a;height:'+tableHeight+'px;border-radius:10px;position:relative;overflow:hidden;border:8px solid #8B4513;width:100%;">';
     
-    const pockets = [[0,0],[200,0],[400,0],[0,250],[200,250],[400,250]];
+    // 球袋 (6个角)
+    const pockets = [[0,0],[50,0],[100,0],[0,100],[50,100],[100,100]]; // 百分比位置
     pockets.forEach(([px,py]) => {
-        html += '<div style="position:absolute;left:'+px+'px;top:'+py+'px;width:20px;height:20px;background:#111;border-radius:50%;"></div>';
+        html += '<div style="position:absolute;left:'+px+'%;top:'+py+'%;width:20px;height:20px;background:#111;border-radius:50%;transform:translate(-50%,-50%);"></div>';
     });
     
-    gs.balls.forEach(ball => {
+    // 球 - 使用百分比位置
+    gs.balls.forEach((ball, idx) => {
         if (!ball.pocketed) {
-            html += '<div onclick="billiardsClick('+ball.id+')" style="position:absolute;left:'+(ball.x-8)+'px;top:'+(ball.y-8)+'px;width:16px;height:16px;background:radial-gradient(circle at 30% 30%,'+ball.color+',#000);border-radius:50%;box-shadow:1px 1px 3px rgba(0,0,0,0.5);cursor:pointer;"></div>';
+            const leftPct = (ball.x / gs.width) * 100;
+            const topPct = (ball.y / gs.height) * 100;
+            html += '<div onclick="billiardsClick('+idx+')" style="position:absolute;left:'+leftPct+'%;top:'+topPct+'%;width:16px;height:16px;background:radial-gradient(circle at 30% 30%,'+ball.color+',#000);border-radius:50%;box-shadow:1px 1px 3px rgba(0,0,0,0.5);cursor:pointer;transform:translate(-50%,-50%);z-index:10;"></div>';
         }
     });
     
     html += '</div></div>';
     
-    const pocketed = gs.balls.filter(b => b.pocketed && b.id !== 1).length;
+    // 得分
+    const pocketed = gs.balls.filter((b, i) => b.pocketed && i !== 0).length;
     html += '<div style="text-align:center;margin-top:15px;padding:10px;background:var(--glass-bg);border-radius:10px;">';
     html += '<p>进球数: <span style="color:#f39c12;font-size:24px;font-weight:bold;">'+pocketed+'</span></p>';
     html += '<button onclick="initLocalBilliards()" style="padding:10px 20px;background:var(--accent-primary);color:#fff;border:none;border-radius:15px;cursor:pointer;margin-top:10px;">重新开始</button>';
@@ -8482,6 +8645,9 @@ function animateBilliards() {
         <div style="display:flex; flex-direction:column; gap:12px;">
             <button class="btn btn-primary" onclick="startOfflineAI()" style="padding:15px; font-size:16px;">
                 🤖 人机对战
+            </button>
+            <button class="btn btn-secondary" onclick="startTwoPlayer()" style="padding:15px; font-size:16px;">
+                👥 双人对战
             </button>
             <button class="btn btn-secondary" onclick="closeGameMenu()" style="padding:12px;">
                 取消
