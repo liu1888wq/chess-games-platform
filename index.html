@@ -931,8 +931,8 @@
                 <p style="color: var(--text-secondary);">登录以继续游戏</p>
             </div>
             <div class="input-group">
-                <label class="input-label">QQ邮箱</label>
-                <input type="email" class="input-field" id="login-email" placeholder="请输入QQ邮箱">
+                <label class="input-label">用户名</label>
+                <input type="text" class="input-field" id="login-email" placeholder="请输入用户名">
             </div>
             <div class="input-group">
                 <label class="input-label">密码</label>
@@ -953,8 +953,8 @@
                 <p style="color: var(--text-secondary);">创建您的新账号</p>
             </div>
             <div class="input-group">
-                <label class="input-label">QQ邮箱</label>
-                <input type="email" class="input-field" id="register-email" placeholder="请输入QQ邮箱">
+                <label class="input-label">用户名</label>
+                <input type="text" class="input-field" id="register-email" placeholder="请输入用户名">
             </div>
             <div class="input-group">
                 <label class="input-label">昵称</label>
@@ -4230,16 +4230,15 @@ function applyLanguage(lang) {
                 el.placeholder = text;
             }
         });
+        
+        // 更新游戏卡片
+        updateGameCards(lang);
+        
+        // 更新聊天提示
+        updateChatHint(lang);
     } catch(e) {
         console.log('applyLanguage error:', e);
     }
-}
-    
-    // 更新游戏卡片
-    updateGameCards(lang);
-    
-    // 更新聊天提示
-    updateChatHint(lang);
 }
 
 function updateGameCards(lang) {
@@ -5997,6 +5996,15 @@ function douDiZhuPlay() {
             if (selectedLang) {
                 // 保存
                 localStorage.setItem('selectedLang', selectedLang);
+                
+                // 更新 i18n 系统
+                if (typeof currentLang !== 'undefined') {
+                    currentLang = selectedLang;
+                }
+                if (typeof applyLanguage === 'function') {
+                    try { applyLanguage(selectedLang); } catch(e) { console.log('applyLanguage error:', e); }
+                }
+                
                 // 切换到登录页
                 switchPage('login-page');
             }
@@ -6010,11 +6018,6 @@ function douDiZhuPlay() {
             
             if (!email || !nickname || !password) {
                 showModal('错误', '请填写所有字段');
-                return;
-            }
-            
-            if (!email.match(/^[a-zA-Z0-9._%+-]+@qq\.com$/)) {
-                showModal('错误', '请输入有效的QQ邮箱');
                 return;
             }
             
@@ -6053,7 +6056,7 @@ function douDiZhuPlay() {
             const password = document.getElementById('login-password').value;
             
             if (!email || !password) {
-                showModal('错误', '请填写邮箱和密码');
+                showModal('错误', '请填写用户名和密码');
                 return;
             }
             
@@ -7021,11 +7024,7 @@ function renderLocalChineseChess() {
             const red = isPiece && isRed(p);
             const bg = (r + c) % 2 === 0 ? '#DEB887' : '#C4A574';
             const border = gs.selected && gs.selected.r === r && gs.selected.c === c ? '3px solid #e94560' : '1px solid #654321';
-            // 显示可移动格子提示（小绿点）- 空格子且轮到玩家
-            const canMove = !gs.gameOver && gs.currentPlayer === 'red' && !isPiece;
-            const moveIndicator = canMove ? '<div style="width:30%;height:30%;background:rgba(0,255,0,0.3);border-radius:50%;"></div>' : '';
-            
-            html += `<div onclick="chessClick(${r},${c})" style="aspect-ratio:1;background:${bg};border:${border};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;color:${red?'#c00':'#000'};cursor:pointer;position:relative;${isPiece?'text-shadow:1px 1px 2px rgba(0,0,0,0.5);':''}">${isPiece ? pieceChars[p] : ''}${moveIndicator}</div>`;
+            html += `<div onclick="chessClick(${r},${c})" style="aspect-ratio:1;background:${bg};border:${border};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;color:${red?'#c00':'#000'};cursor:pointer;position:relative;${isPiece?'text-shadow:1px 1px 2px rgba(0,0,0,0.5);':''}">${isPiece ? pieceChars[p] : ''}</div>`;
         }
     }
     html += '</div></div>';
@@ -7303,10 +7302,7 @@ function renderLocalChess() {
             const border = gs.selected && gs.selected.r === r && gs.selected.c === c ? '3px solid #e94560' : '1px solid transparent';
             const piece = p ? pieceSymbols[p] || p : '';
             const pieceColor = p && p === p.toUpperCase() ? '#fff' : '#000';
-            // 显示可移动格子提示（小绿点）
-            const canMove = !gs.gameOver && gs.currentPlayer === 'white' && !p;
-            const moveIndicator = canMove ? '<div style="width:30%;height:30%;background:rgba(0,255,0,0.3);border-radius:50%;"></div>' : '';
-            html += `<div onclick="chessClick(${r},${c})" style="aspect-ratio:1;background:${bg};border:${border};display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;position:relative;text-shadow:${p && p === p.toUpperCase() ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none'};color:${pieceColor};">${piece}${moveIndicator}</div>`;
+            html += `<div onclick="chessClick(${r},${c})" style="aspect-ratio:1;background:${bg};border:${border};display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;position:relative;text-shadow:${p && p === p.toUpperCase() ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none'};color:${pieceColor};">${piece}</div>`;
         }
     }
     html += '</div>';
@@ -7440,13 +7436,7 @@ function renderLocalCheckers() {
             if (v === 1) piece = '<div style="width:80%;height:80%;background:radial-gradient(circle,#ff6b6b,#c0392b);border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>';
             else if (v === 2) piece = '<div style="width:80%;height:80%;background:radial-gradient(circle,#555,#111);border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>';
 
-            // 显示可移动格子提示（小绿点）
-            let moveIndicator = '';
-            if (!gs.gameOver && gs.currentPlayer === 1 && v === 0 && isDark) {
-                moveIndicator = '<div style="width:30%;height:30%;background:rgba(0,255,0,0.3);border-radius:50%;"></div>';
-            }
-
-            html += `<div onclick="checkersClick(${r},${c})" style="aspect-ratio:1;background:${bg};${border}display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;">${piece}${moveIndicator}</div>`;
+            html += `<div onclick="checkersClick(${r},${c})" style="aspect-ratio:1;background:${bg};${border}display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;">${piece}</div>`;
         }
     }
     html += '</div>';
@@ -7710,6 +7700,7 @@ function initLocalHorseRacing() {
         message: '选择你喜欢的马下注！',
         isRacing: false
     };
+    localGameState = horseRacingState;
 }
 
 function renderLocalHorseRacing() {
@@ -8448,9 +8439,7 @@ function renderLocalTicTacToe() {
             const color = v === 1 ? '#e94560' : v === 2 ? '#3498db' : '#666';
             const canMove = !gs.gameOver && gs.currentPlayer === 1 && v === 0;
             const cursor = canMove ? 'cursor:pointer;' : '';
-            // 显示可移动格子提示（小绿点）
-            const moveIndicator = canMove ? '<div style="width:20%;height:20%;background:rgba(0,255,0,0.4);border-radius:50%;"></div>' : '';
-            html += '<div onclick="tttClick('+r+','+c+')" style="aspect-ratio:1;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:50px;font-weight:bold;color:'+color+';'+cursor+'position:relative;">'+sym+moveIndicator+'</div>';
+            html += '<div onclick="tttClick('+r+','+c+')" style="aspect-ratio:1;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:50px;font-weight:bold;color:'+color+';'+cursor+'position:relative;">'+sym+'</div>';
         }
     }
     html += '</div>';
@@ -8559,18 +8548,13 @@ function renderLocalAnimalChess() {
             if (v > 0) {
                 bg = isPlayer ? '#e94560' : '#3498db';
             }
-            // 显示可移动格子提示（小绿点）
-            let moveIndicator = '';
-            if (!gs.gameOver && gs.currentPlayer === 'player' && v === 0) {
-                moveIndicator = '<div style="width:30%;height:30%;background:rgba(0,255,0,0.3);border-radius:50%;"></div>';
-            }
             let piece = '';
             if (v !== 0) {
                 const pieceName = pieces[Math.abs(v)];
                 const emoji = isPlayer ? '🔴' : '🔵';
                 piece = '<div style="text-align:center;"><div style="font-size:20px;">'+emoji+'</div><div style="font-size:10px;color:#fff;">'+pieceName+'</div></div>';
             }
-            html += '<div onclick="animalClick('+r+','+c+')" style="aspect-ratio:1;background:'+bg+';'+border+';border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:50px;position:relative;">'+piece+moveIndicator+'</div>';
+            html += '<div onclick="animalClick('+r+','+c+')" style="aspect-ratio:1;background:'+bg+';'+border+';border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:50px;position:relative;">'+piece+'</div>';
         }
     }
     html += '</div>';
@@ -9160,9 +9144,9 @@ let currentMusicTab = 'all';
 let currentTrackIndex = -1;
 let isPlaying = false;
 let favorites = JSON.parse(localStorage.getItem('musicFavorites') || '[]');
-let audioContext = null;
+let audioCtx = null;
 let currentOscillator = null;
-let musicInterval = null;
+let musicTimeout = null;
 
 function openMusicPlayer() {
     document.getElementById('music-player').style.display = 'block';
@@ -9266,59 +9250,76 @@ function toggleFavorite(idx) {
 }
 
 // 使用 Web Audio API 生成简单旋律
-function playTrack(idx) {
-    // 确保音频上下文已创建
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    if (audioContext.state === 'suspended') {
-        audioContext.resume();
-    }
+let audioCtx = null;
+let musicTimeout = null;
 
+function getAudioContext() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+    return audioCtx;
+}
+
+function playTrack(idx) {
     currentTrackIndex = idx;
     const track = musicLibrary[idx];
-
+    isPlaying = true;
+    
     document.getElementById('now-playing').style.display = 'block';
     document.getElementById('now-playing-name').textContent = track.name;
     document.getElementById('now-playing-artist').textContent = track.artist;
     document.getElementById('play-pause-btn').textContent = '⏸';
-    isPlaying = true;
-
-    // 生成旋律
-    stopMusic();
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-    // 根据歌曲名生成不同的旋律
+    
+    stopMusicSound();
+    
+    const ctx = getAudioContext();
     const seed = hashCode(track.name + track.artist);
     const notes = generateMelody(seed);
     let noteIndex = 0;
-
-    function playNote() {
-        if (!isPlaying || noteIndex >= notes.length) {
-            if (isPlaying) noteIndex = 0; // 循环
-            else return;
+    
+    function playNextNote() {
+        if (!isPlaying) return;
+        
+        try {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            
+            osc.frequency.value = notes[noteIndex % notes.length];
+            osc.type = ['sine', 'triangle', 'square'][seed % 3];
+            
+            const now = ctx.currentTime;
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.12, now + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+            
+            osc.start(now);
+            osc.stop(now + 0.4);
+            
+            noteIndex++;
+            musicTimeout = setTimeout(playNextNote, 400);
+        } catch(e) {
+            console.log('Audio error:', e);
         }
-
-        const osc = audioContext.createOscillator();
-        const gain = audioContext.createGain();
-        osc.connect(gain);
-        gain.connect(audioContext.destination);
-
-        osc.frequency.value = notes[noteIndex];
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
-
-        osc.start(audioContext.currentTime);
-        osc.stop(audioContext.currentTime + 0.4);
-
-        noteIndex++;
-        musicInterval = setTimeout(playNote, 450);
     }
-
-    playNote();
-    renderMusicList(document.getElementById('music-search').value);
+    
+    playNextNote();
+    
+    // 更新列表显示
+    const searchVal = document.getElementById('music-search') ? document.getElementById('music-search').value : '';
+    renderMusicList(searchVal);
     renderFavList();
+}
+
+function stopMusicSound() {
+    if (musicTimeout) {
+        clearTimeout(musicTimeout);
+        musicTimeout = null;
+    }
 }
 
 function hashCode(str) {
@@ -9355,9 +9356,7 @@ function generateMelody(seed) {
 
 function stopMusic() {
     isPlaying = false;
-    if (musicInterval) clearTimeout(musicInterval);
-    if (audioContext) audioContext.close().catch(()=>{});
-    audioContext = null;
+    stopMusicSound();
 }
 
 function togglePlayPause() {
