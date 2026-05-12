@@ -6708,7 +6708,15 @@ function pokerStand() {
 // ===== 其他游戏占位 =====
 function initLocalChess() { initLocalGomoku(); localGameState.isChess = true; }
 function initLocalChineseChess() { initLocalGomoku(); localGameState.isChess = true; }
-function initLocalGo() { initLocalGomoku(); localGameState.isChess = true; localGameState.board = Array(9).fill(null).map(() => Array(9).fill(0)); localGameState.size = 9; }
+function initLocalGo() {
+    const size = 19;
+    localGameState = { 
+        board: Array(size).fill(null).map(() => Array(size).fill(0)), 
+        currentPlayer: 1, 
+        gameOver: false 
+    };
+    renderLocalGo();
+}
 
 // 通用渲染
 function renderLocalGame() {
@@ -7822,10 +7830,9 @@ function doudizhuAIMove() {
 }
 
 // ===== 日本将棋 =====
-let shogiState = null;
 
 function initLocalShogi() {
-    shogiState = {
+    localGameState = {
         board: [
             ['l','n','s','g','k','g','s','n','l'],
             [0,'r',0,0,0,0,0,'b',0],
@@ -7848,7 +7855,7 @@ function initLocalShogi() {
 function renderLocalShogi() {
     const container = document.getElementById('game-board');
     if (!container) return;
-    const gs = shogiState;
+    const gs = localGameState;
     
     const pieceChars = {
         'k':'王','K':'玉','g':'金','G':'金','s':'银','S':'银','n':'桂','N':'桂',
@@ -7903,7 +7910,7 @@ function renderLocalShogi() {
 }
 
 function shogiClick(r, c) {
-    const gs = shogiState;
+    const gs = localGameState;
     if (gs.gameOver || gs.currentPlayer !== 'white') return;
     
     const p = gs.board[r][c];
@@ -7932,7 +7939,7 @@ function shogiClick(r, c) {
 }
 
 function isValidShogiMove(sr, sc, dr, dc, player) {
-    const p = shogiState.board[sr][sc];
+    const p = localGameState.board[sr][sc];
     if (!p) return false;
     const dr2 = player === 'white' ? dr - sr : sr - dr;
     const dc2 = dc - sc;
@@ -7951,7 +7958,7 @@ function isValidShogiMove(sr, sc, dr, dc, player) {
 }
 
 function shogiAIMove() {
-    const gs = shogiState;
+    const gs = localGameState;
     const moves = [];
     for (let r = 0; r < 9; r++)
         for (let c = 0; c < 9; c++)
@@ -7972,10 +7979,9 @@ function shogiAIMove() {
 }
 
 // ===== 井字棋 =====
-let ticTacToeState = null;
 
 function initLocalTicTacToe() {
-    ticTacToeState = {
+    localGameState = {
         board: Array(3).fill(null).map(() => Array(3).fill(0)),
         currentPlayer: 1,
         gameOver: false,
@@ -7986,7 +7992,7 @@ function initLocalTicTacToe() {
 function renderLocalTicTacToe() {
     const container = document.getElementById('game-board');
     if (!container) return;
-    const gs = ticTacToeState;
+    const gs = localGameState;
     
     let html = '<div style="max-width:300px;margin:0 auto;padding:20px;text-align:center;">';
     html += '<h3 style="margin-bottom:15px;">❌ 井字棋 ⭕</h3>';
@@ -8014,7 +8020,7 @@ function renderLocalTicTacToe() {
 }
 
 function tttClick(r, c) {
-    const gs = ticTacToeState;
+    const gs = localGameState;
     if (gs.gameOver || gs.currentPlayer !== 1 || gs.board[r][c] !== 0) return;
     
     gs.board[r][c] = 1;
@@ -8039,7 +8045,7 @@ function tttClick(r, c) {
 }
 
 function checkTicTacToeWin(player) {
-    const b = ticTacToeState.board;
+    const b = localGameState.board;
     for (let i = 0; i < 3; i++) if (b[i][0]===player && b[i][1]===player && b[i][2]===player) return true;
     for (let j = 0; j < 3; j++) if (b[0][j]===player && b[1][j]===player && b[2][j]===player) return true;
     if (b[0][0]===player && b[1][1]===player && b[2][2]===player) return true;
@@ -8048,15 +8054,14 @@ function checkTicTacToeWin(player) {
 }
 
 function isTicTacToeDraw() {
-    for (let r=0;r<3;r++) for (let c=0;c<3;c++) if (ticTacToeState.board[r][c]===0) return false;
+    for (let r=0;r<3;r++) for (let c=0;c<3;c++) if (localGameState.board[r][c]===0) return false;
     return true;
 }
 
 // ===== 斗兽棋 =====
-let animalChessState = null;
 
 function initLocalAnimalChess() {
-    animalChessState = {
+    localGameState = {
         pieces: [
             {id:1, name:'鼠', rank:1}, {id:2, name:'猫', rank:2},
             {id:3, name:'狗', rank:3}, {id:4, name:'狼', rank:4},
@@ -8072,7 +8077,7 @@ function initLocalAnimalChess() {
         winner: null
     };
     
-    animalChessState.board = [
+    localGameState.board = [
         [8, 6, 4, 2],
         [0, 0, 0, 0],
         [0, 0, 0, 0],
@@ -8083,7 +8088,7 @@ function initLocalAnimalChess() {
 function renderLocalAnimalChess() {
     const container = document.getElementById('game-board');
     if (!container) return;
-    const gs = animalChessState;
+    const gs = localGameState;
     const pieces = {1:'鼠',2:'猫',3:'狗',4:'狼',5:'豹',6:'狮',7:'虎',8:'象'};
     
     let html = '<div style="max-width:350px;margin:0 auto;padding:10px;">';
@@ -8121,7 +8126,7 @@ function renderLocalAnimalChess() {
 }
 
 function animalClick(r, c) {
-    const gs = animalChessState;
+    const gs = localGameState;
     if (gs.gameOver || gs.currentPlayer !== 'player') return;
     
     const v = gs.board[r][c];
@@ -8133,7 +8138,7 @@ function animalClick(r, c) {
     
     if (gs.selected) {
         const {r: sr, c: sc} = gs.selected;
-        if (canAnimalMove(sr, sc, r, c, 'player')) {
+        if (canAnimalMove(sr, sc, r, c)) {
             if (v !== 0 && gs.aiPieces.includes(Math.abs(v))) {
                 const myRank = gs.playerPieces.indexOf(v) + 1;
                 const aiRank = gs.aiPieces.indexOf(Math.abs(v)) + 1;
@@ -8156,22 +8161,21 @@ function animalClick(r, c) {
     }
 }
 
-function canAnimalMove(sr, sc, dr, dc, player) {
+function canAnimalMove(sr, sc, dr, dc) {
     const dr2 = Math.abs(dr - sr);
     const dc2 = Math.abs(dc - sc);
-    if (dr2 + dc2 !== 1) return false;
-    return true;
+    return dr2 + dc2 === 1;
 }
 
 function animalAIMove() {
-    const gs = animalChessState;
+    const gs = localGameState;
     const moves = [];
     for (let r = 0; r < 4; r++)
         for (let c = 0; c < 4; c++)
             if (gs.board[r][c] > 0 && gs.aiPieces.includes(gs.board[r][c]))
                 for (let dr = 0; dr < 4; dr++)
                     for (let dc = 0; dc < 4; dc++)
-                        if (canAnimalMove(r, c, dr, dc, 'ai')) {
+                        if (canAnimalMove(r, c, dr, dc)) {
                             const target = gs.board[dr][dc];
                             let score = Math.random();
                             if (target > 0 && gs.playerPieces.includes(target)) {
@@ -8196,10 +8200,9 @@ function animalAIMove() {
 }
 
 // ===== 军棋 =====
-let militaryChessState = null;
 
 function initLocalMilitaryChess() {
-    militaryChessState = {
+    localGameState = {
         board: Array(6).fill(null).map(() => Array(5).fill(0)),
         playerPieces: [25,23,21,19,17,15,13,10,9,1,24,22,20,18,16,14,12,11,8],
         aiPieces: [],
@@ -8211,16 +8214,16 @@ function initLocalMilitaryChess() {
         moveCount: 0
     };
     
-    militaryChessState.board[5] = [25, 23, 21, 19, 17];
-    militaryChessState.board[4] = [15, 13, 10, 9, 1];
-    militaryChessState.board[0] = [24, 22, 20, 18, 16];
-    militaryChessState.board[1] = [14, 12, 11, 8, 1];
+    localGameState.board[5] = [25, 23, 21, 19, 17];
+    localGameState.board[4] = [15, 13, 10, 9, 1];
+    localGameState.board[0] = [24, 22, 20, 18, 16];
+    localGameState.board[1] = [14, 12, 11, 8, 1];
 }
 
 function renderLocalMilitaryChess() {
     const container = document.getElementById('game-board');
     if (!container) return;
-    const gs = militaryChessState;
+    const gs = localGameState;
     
     const pieceNames = {
         25:'司',24:'军',23:'师',22:'师',21:'旅',20:'旅',19:'团',18:'团',
@@ -8274,7 +8277,7 @@ function renderLocalMilitaryChess() {
 }
 
 function militaryClick(r, c) {
-    const gs = militaryChessState;
+    const gs = localGameState;
     if (gs.gameOver || gs.currentPlayer !== 'player') return;
     
     const v = gs.board[r][c];
@@ -8301,17 +8304,17 @@ function militaryClick(r, c) {
 }
 
 function militarySelect(r, c) {
-    militaryChessState.selected = {r, c};
+    localGameState.selected = {r, c};
     renderLocalMilitaryChess();
 }
 
 function toggleMilitaryMode() {
-    militaryChessState.hiddenMode = !militaryChessState.hiddenMode;
+    localGameState.hiddenMode = !localGameState.hiddenMode;
     renderLocalMilitaryChess();
 }
 
 function militaryAIMove() {
-    const gs = militaryChessState;
+    const gs = localGameState;
     const aiPieces = [];
     for (let r = 0; r <= 1; r++)
         for (let c = 0; c < 5; c++)
@@ -8327,10 +8330,9 @@ function militaryAIMove() {
 }
 
 // ===== 台球 =====
-let billiardsState = null;
 
 function initLocalBilliards() {
-    billiardsState = {
+    localGameState = {
         balls: [
             {id:1, x:200, y:200, vx:0, vy:0, color:'#fff', pocketed:false},
             {id:2, x:400, y:300, vx:0, vy:0, color:'#f1c40f', pocketed:false},
@@ -8350,7 +8352,7 @@ function initLocalBilliards() {
 function renderLocalBilliards() {
     const container = document.getElementById('game-board');
     if (!container) return;
-    const gs = billiardsState;
+    const gs = localGameState;
     
     let html = '<div style="max-width:420px;margin:0 auto;padding:10px;">';
     html += '<h3 style="text-align:center;margin-bottom:10px;">🎱 台球</h3>';
@@ -8383,7 +8385,7 @@ function renderLocalBilliards() {
 }
 
 function billiardsClick(id) {
-    const gs = billiardsState;
+    const gs = localGameState;
     if (id === 1 && gs.aiming && gs.playerTurn) {
         billiardsTarget = 1;
         gs.message = '现在点击白球拖动瞄准方向！';
@@ -8398,30 +8400,29 @@ function billiardsClick(id) {
 }
 
 function animateBilliards() {
-    const gs = billiardsState;
-    let moving = true;
+    const gs = localGameState;
+    let animationId = null;
     
     function step() {
-        if (!moving) return;
-        
-        moving = false;
+        let moving = false;
         gs.balls.forEach(ball => {
             if (ball.pocketed) return;
             
             ball.x += ball.vx;
             ball.y += ball.vy;
-            
             ball.vx *= 0.98;
             ball.vy *= 0.98;
             
             if (Math.abs(ball.vx) > 0.1 || Math.abs(ball.vy) > 0.1) moving = true;
             else { ball.vx = 0; ball.vy = 0; }
             
+            // 边界反弹
             if (ball.x < 10) { ball.x = 10; ball.vx = -ball.vx; }
             if (ball.x > gs.width - 10) { ball.x = gs.width - 10; ball.vx = -ball.vx; }
             if (ball.y < 10) { ball.y = 10; ball.vy = -ball.vy; }
             if (ball.y > gs.height - 10) { ball.y = gs.height - 10; ball.vy = -ball.vy; }
             
+            // 检查进袋
             const pockets = [[10,10],[200,10],[390,10],[10,240],[200,240],[390,240]];
             pockets.forEach(([px,py]) => {
                 const dist = Math.sqrt((ball.x-px)**2 + (ball.y-py)**2);
@@ -8435,8 +8436,9 @@ function animateBilliards() {
         renderLocalBilliards();
         
         if (moving) {
-            setTimeout(step, 50);
+            animationId = requestAnimationFrame(step);
         } else {
+            if (animationId) cancelAnimationFrame(animationId);
             if (gs.balls[0].pocketed) {
                 gs.balls[0].pocketed = false;
                 gs.balls[0].x = 200;
