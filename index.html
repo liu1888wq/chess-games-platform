@@ -1033,11 +1033,6 @@
                 <div class="game-name">德州扑克</div>
                 <div class="game-players">1.2万人在线</div>
             </div>
-            <div class="game-card" onclick="showGameMenu('zhaJinHua')">
-                <div class="game-icon">🌸</div>
-                <div class="game-name">炸金花</div>
-                <div class="game-players">6千人在线</div>
-            </div>
             <div class="game-card" onclick="showGameMenu('douDiZhu')">
                 <div class="game-icon">👲</div>
                 <div class="game-name">斗地主</div>
@@ -1198,13 +1193,6 @@
                     <span class="game-stat-name">德州扑克</span>
                 </div>
                 <span class="game-stat-rate" id="rate-texasHoldem">0%</span>
-            </div>
-            <div class="game-stat-item">
-                <div class="game-stat-info">
-                    <span class="game-stat-icon">🌸</span>
-                    <span class="game-stat-name">炸金花</span>
-                </div>
-                <span class="game-stat-rate" id="rate-zhaJinHua">0%</span>
             </div>
             <div class="game-stat-item">
                 <div class="game-stat-info">
@@ -4479,7 +4467,6 @@ const gameConfigs = {
     flightChess: { name: '飞行棋', rows: 1, cols: 1 },
     poker: { name: '21点', rows: 1, cols: 1 },
     texasHoldem: { name: '德州扑克', rows: 1, cols: 1 },
-    zhaJinHua: { name: '炸金花', rows: 1, cols: 1 },
     douDiZhu: { name: '斗地主', rows: 1, cols: 1 }
 };
 
@@ -4830,7 +4817,6 @@ function renderBoard() {
             break;
         case 'poker': renderPokerBoard(container); break;
         case 'texasHoldem': renderTexasHoldemBoard(container); break;
-        case 'zhaJinHua': renderZhaJinHuaBoard(container); break;
         case 'douDiZhu': renderDouDiZhuBoard(container); break;
     }
 }
@@ -5679,96 +5665,6 @@ function texasHoldemAllIn() {
     }
 }
 
-// ==================== 炸金花渲染 ====================
-function renderZhaJinHuaBoard(container) {
-    if (!gameState) return;
-    
-    const isPlayerTurn = gameState.currentPlayer === 'player' && gameState.status === 'playing';
-    const gameEnded = gameState.status === 'ended';
-    
-    // 渲染AI手牌（背面）
-    let aiHandHtml = '';
-    if (gameEnded) {
-        aiHandHtml = gameState.aiHand.map(card => {
-            const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
-            return '<div style="width: 60px; height: 85px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; color: ' + color + '; border: 2px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><span style="font-size: 20px; font-weight: bold;">' + card.value + '</span><span style="font-size: 16px;">' + card.suit + '</span></div>';
-        }).join('');
-    } else {
-        aiHandHtml = Array(3).fill('<div style="width: 60px; height: 85px; background: linear-gradient(135deg, #e94560, #c0392b); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #fff;">🂠</div>').join('');
-    }
-    
-    // 玩家手牌（如果已看牌则显示正面）
-    let playerHandHtml = '';
-    if (gameState.playerSeen || gameEnded) {
-        playerHandHtml = gameState.playerHand.map(card => {
-            const color = (card.suit === '♥' || card.suit === '♦') ? '#e74c3c' : '#2c3e50';
-            return '<div style="width: 60px; height: 85px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 14px; color: ' + color + '; border: 2px solid #ddd; box-shadow: 0 2px 8px rgba(0,0,0,0.2);"><span style="font-size: 20px; font-weight: bold;">' + card.value + '</span><span style="font-size: 16px;">' + card.suit + '</span></div>';
-        }).join('');
-    } else {
-        playerHandHtml = Array(3).fill('<div style="width: 60px; height: 85px; background: linear-gradient(135deg, #e94560, #c0392b); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 2px solid #fff;">🂠</div>').join('');
-    }
-    
-    container.innerHTML = `
-        <div style="text-align: center; padding: 20px; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #f39c12; margin-bottom: 15px;">🃏 炸金花 Zha Jin Hua</h2>
-            
-            <!-- 游戏信息 -->
-            <div style="display: flex; justify-content: space-around; margin-bottom: 20px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                <span style="color: #f39c12;">底池: ${gameState.pot}</span>
-                <span style="color: #aaa;">底注: ${gameState.currentBet}</span>
-            </div>
-            
-            <!-- AI区域 -->
-            <div style="margin-bottom: 20px;">
-                <h3 style="color: #aaa; margin-bottom: 10px;">🤖 AI (筹码: ${gameState.aiChips})</h3>
-                <div style="display: flex; justify-content: center; gap: 10px;">
-                    ${aiHandHtml}
-                </div>
-            </div>
-            
-            <!-- 玩家区域 -->
-            <div style="margin: 20px 0;">
-                <h3 style="color: #f39c12; margin-bottom: 10px;">👤 玩家 (筹码: ${gameState.playerChips}) ${gameState.playerSeen ? '(已看牌)' : '(未看牌)'}</h3>
-                <div style="display: flex; justify-content: center; gap: 10px;">
-                    ${playerHandHtml}
-                </div>
-            </div>
-            
-            <!-- 操作按钮 -->
-            ${!gameEnded && isPlayerTurn ? `
-                <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px; flex-wrap: wrap;">
-                    <button onclick="zhaJinHuaFold()" style="padding: 15px 30px; font-size: 1.1em; background: linear-gradient(90deg, #e74c3c, #c0392b); color: #fff; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;">弃牌</button>
-                    <button onclick="zhaJinHuaSee()" style="padding: 15px 30px; font-size: 1.1em; background: linear-gradient(90deg, #27ae60, #2ecc71); color: #fff; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;">看牌比牌</button>
-                    <button onclick="zhaJinHuaBet()" style="padding: 15px 30px; font-size: 1.1em; background: linear-gradient(90deg, #f39c12, #e67e22); color: #fff; border: none; border-radius: 25px; cursor: pointer; font-weight: bold;">下注</button>
-                </div>
-            ` : !gameEnded ? '<p style="color: #aaa; margin-top: 20px;">AI思考中...</p>' : ''}
-            
-            <!-- 消息 -->
-            ${gameState.message ? `
-                <div style="margin-top: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px;">
-                    <p style="font-size: 1.2em; color: ${gameState.winner === 'player' ? '#2ecc71' : gameState.winner === 'ai' ? '#e74c3c' : '#f39c12'}; font-weight: bold;">${gameState.message}</p>
-                </div>
-            ` : ''}
-        </div>
-    `;
-}
-
-function zhaJinHuaFold() {
-    if (!ws || !currentRoom) return;
-    ws.send(JSON.stringify({ type: 'move', extra: { action: 'fold' } }));
-}
-
-function zhaJinHuaSee() {
-    if (!ws || !currentRoom) return;
-    ws.send(JSON.stringify({ type: 'move', extra: { action: 'see' } }));
-}
-
-function zhaJinHuaBet() {
-    if (!ws || !currentRoom) return;
-    const amount = parseInt(prompt('请输入下注金额:', '20')) || 20;
-    ws.send(JSON.stringify({ type: 'move', extra: { action: 'bet', amount: amount } }));
-}
-
 // ==================== 斗地主渲染 ====================
 function renderDouDiZhuBoard(container) {
     if (!gameState) return;
@@ -5949,7 +5845,7 @@ function douDiZhuPlay() {
         const gameIcons = {
             'chess': '♟️', 'go': '⚫', 'chineseChess': '🀄', 'gomoku': '⚪',
             'othello': '🔘', 'checkers': '🔴', 'flightChess': '✈️',
-            'poker': '🃏', 'texasHoldem': '🎰', 'zhaJinHua': '🌸', 'douDiZhu': '👲'
+            'poker': '🃏', 'texasHoldem': '🎰', 'douDiZhu': '👲'
         };
 
         function switchPage(pageId) {
@@ -6178,7 +6074,7 @@ function douDiZhuPlay() {
             pie.style.setProperty('--win-angle', (rate / 100 * 360) + 'deg');
             
             // 更新各游戏胜率
-            const gameRates = ['chess', 'go', 'chinese-chess', 'gomoku', 'othello', 'checkers', 'flightChess', 'poker', 'texasHoldem', 'zhaJinHua', 'douDiZhu'];
+            const gameRates = ['chess', 'go', 'chinese-chess', 'gomoku', 'othello', 'checkers', 'flightChess', 'poker', 'texasHoldem', 'douDiZhu'];
             gameRates.forEach(game => {
                 const el = document.getElementById('rate-' + game);
                 if (el) {
@@ -6253,7 +6149,7 @@ const gameNames = {
     'chess': '国际象棋', 'go': '围棋', 'chineseChess': '中国象棋',
     'gomoku': '五子棋', 'othello': '黑白棋', 'checkers': '跳棋',
     'flightChess': '飞行棋', 'poker': '21点', 'texasHoldem': '德州扑克',
-    'zhaJinHua': '炸金花', 'douDiZhu': '斗地主'
+    'douDiZhu': '斗地主'
 };
 
 function showGameMenu(gameType) {
@@ -6741,7 +6637,6 @@ function renderLocalGame() {
         case 'flightChess': renderLocalFlightChess(); break;
         case 'poker': renderLocalPoker(); break;
         case 'texasHoldem': renderLocalTexasHoldem(); break;
-        case 'zhaJinHua': renderLocalZhaJinHua(); break;
         case 'douDiZhu': renderLocalDouDiZhu(); break;
         default: 
             document.getElementById('game-board').innerHTML = '<div style="text-align:center;padding:50px;"><h2>游戏开发中...</h2><button class="btn btn-primary" onclick="showGameMenu(localGameType)" style="margin-top:20px;">返回</button></div>';
@@ -6972,12 +6867,414 @@ function renderLocalCheckers() { initLocalOthello(); renderLocalOthello(); }
 function initLocalFlightChess() {
     document.getElementById('game-board').innerHTML = '<div style="text-align:center;padding:50px;"><h2>🎲 飞行棋</h2><p style="margin:20px 0;color:var(--text-secondary);">飞行棋开发中...</p><button class="btn btn-primary" onclick="showGameMenu(\'flightChess\')">返回</button></div>';
 }
-function initLocalTexasHoldem() { initLocalPoker(); renderLocalPoker(); }
-function initLocalZhaJinHua() { initLocalPoker(); renderLocalPoker(); }
-function initLocalDouDiZhu() { initLocalPoker(); renderLocalPoker(); }
-function renderLocalTexasHoldem() { initLocalPoker(); renderLocalPoker(); }
-function renderLocalZhaJinHua() { initLocalPoker(); renderLocalPoker(); }
-function renderLocalDouDiZhu() { initLocalPoker(); renderLocalPoker(); }
+// ===== 德州扑克 Texas Hold'em =====
+let texasState = null;
+
+function initLocalTexasHoldem() {
+    const deck = createDeck();
+    texasState = {
+        deck: deck,
+        playerHand: [deck.pop(), deck.pop()],
+        aiHand: [deck.pop(), deck.pop()],
+        community: [], // 公共牌
+        pot: 0,
+        playerChips: 1000,
+        aiChips: 1000,
+        phase: 'preflop', // preflop, flop, turn, river, showdown
+        currentBet: 0,
+        playerBet: 0,
+        aiBet: 0,
+        gameOver: false,
+        message: '翻牌前 - 你的回合'
+    };
+    // 盲注
+    texasState.pot = 30;
+    texasState.playerChips -= 10;
+    texasState.aiChips -= 20;
+    texasState.aiBet = 20;
+    texasState.currentBet = 20;
+}
+
+function createDeck() {
+    const suits = ['♠','♥','♦','♣'];
+    const values = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+    const deck = [];
+    for (const s of suits) for (const v of values) deck.push({suit:s, value:v, num: values.indexOf(v)});
+    // 洗牌
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
+}
+
+function renderLocalTexasHoldem() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    const gs = texasState;
+    const isRed = (s) => s === '♥' || s === '♦';
+    
+    const renderCard = (card, hidden) => {
+        if (hidden) return '<div style="width:50px;height:70px;background:linear-gradient(135deg,#e94560,#f39c12);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;margin:2px;font-size:20px;">🂠</div>';
+        const color = isRed(card.suit) ? '#e94560' : '#fff';
+        return `<div style="width:50px;height:70px;background:#fff;border-radius:8px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;margin:2px;color:${color};box-shadow:0 2px 5px rgba(0,0,0,0.3);"><span style="font-size:14px;font-weight:bold;">${card.value}</span><span style="font-size:18px;">${card.suit}</span></div>`;
+    };
+    
+    let html = '<div style="max-width:400px;margin:0 auto;padding:10px;">';
+    
+    // AI区域
+    html += `<div style="background:var(--glass-bg);border-radius:15px;padding:15px;margin-bottom:15px;text-align:center;">`;
+    html += `<p style="margin-bottom:8px;color:var(--text-secondary);">AI 筹码: ${gs.aiChips}</p>`;
+    html += `<div>${gs.aiHand.map((c,i) => renderCard(c, gs.phase !== 'showdown')).join('')}</div>`;
+    html += `</div>`;
+    
+    // 公共牌和底池
+    html += `<div style="background:var(--glass-bg);border-radius:15px;padding:15px;margin-bottom:15px;text-align:center;">`;
+    html += `<p style="font-size:18px;margin-bottom:10px;">💰 底池: ${gs.pot}</p>`;
+    html += `<div style="min-height:74px;">${gs.community.map(c => renderCard(c, false)).join('')}</div>`;
+    html += `</div>`;
+    
+    // 玩家区域
+    html += `<div style="background:var(--glass-bg);border-radius:15px;padding:15px;text-align:center;">`;
+    html += `<div style="margin-bottom:8px;">${gs.playerHand.map(c => renderCard(c, false)).join('')}</div>`;
+    html += `<p style="margin-bottom:5px;">你的筹码: ${gs.playerChips}</p>`;
+    html += `<p style="color:var(--accent-primary);font-size:14px;">${gs.message}</p>`;
+    html += `</div>`;
+    
+    // 操作按钮
+    if (!gs.gameOver && gs.phase !== 'showdown') {
+        html += `<div style="display:flex;gap:10px;justify-content:center;margin-top:15px;flex-wrap:wrap;">`;
+        html += `<button onclick="texasFold()" style="padding:12px 25px;background:#e74c3c;color:#fff;border:none;border-radius:20px;font-size:16px;cursor:pointer;">弃牌</button>`;
+        html += `<button onclick="texasCheck()" style="padding:12px 25px;background:#3498db;color:#fff;border:none;border-radius:20px;font-size:16px;cursor:pointer;">让牌</button>`;
+        html += `<button onclick="texasCall()" style="padding:12px 25px;background:#2ecc71;color:#fff;border:none;border-radius:20px;font-size:16px;cursor:pointer;">跟注 ${gs.currentBet - gs.playerBet}</button>`;
+        html += `<button onclick="texasRaise()" style="padding:12px 25px;background:#f39c12;color:#fff;border:none;border-radius:20px;font-size:16px;cursor:pointer;">加注 50</button>`;
+        html += `</div>`;
+    }
+    
+    if (gs.gameOver || gs.phase === 'showdown') {
+        html += `<div style="text-align:center;margin-top:15px;"><button onclick="showGameMenu('texasHoldem')" style="padding:12px 30px;background:var(--accent-primary);color:#fff;border:none;border-radius:20px;font-size:16px;cursor:pointer;">再来一局</button></div>`;
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function texasFold() {
+    texasState.gameOver = true;
+    texasState.message = '你弃牌了，AI获胜！';
+    texasState.aiChips += texasState.pot;
+    renderLocalTexasHoldem();
+}
+
+function texasCheck() {
+    if (texasState.playerBet < texasState.currentBet) {
+        texasCall();
+        return;
+    }
+    texasState.message = '你让牌';
+    texasNextPhase();
+}
+
+function texasCall() {
+    const amount = texasState.currentBet - texasState.playerBet;
+    texasState.playerChips -= amount;
+    texasState.playerBet += amount;
+    texasState.pot += amount;
+    texasState.message = `你跟注 ${amount}`;
+    texasNextPhase();
+}
+
+function texasRaise() {
+    const raise = 50;
+    const amount = texasState.currentBet - texasState.playerBet + raise;
+    texasState.playerChips -= amount;
+    texasState.playerBet += amount;
+    texasState.currentBet += raise;
+    texasState.pot += amount;
+    texasState.message = `你加注到 ${texasState.currentBet}`;
+    
+    // AI决策
+    setTimeout(() => {
+        const aiDecision = Math.random();
+        if (aiDecision < 0.3) {
+            texasState.message = 'AI弃牌，你获胜！';
+            texasState.playerChips += texasState.pot;
+            texasState.gameOver = true;
+            renderLocalTexasHoldem();
+        } else {
+            const aiAmount = texasState.currentBet - texasState.aiBet;
+            texasState.aiChips -= aiAmount;
+            texasState.aiBet += aiAmount;
+            texasState.pot += aiAmount;
+            texasState.message = 'AI跟注';
+            texasNextPhase();
+        }
+    }, 500);
+}
+
+function texasNextPhase() {
+    setTimeout(() => {
+        switch(texasState.phase) {
+            case 'preflop':
+                texasState.community.push(texasState.deck.pop(), texasState.deck.pop(), texasState.deck.pop());
+                texasState.phase = 'flop';
+                texasState.message = '翻牌圈';
+                break;
+            case 'flop':
+                texasState.community.push(texasState.deck.pop());
+                texasState.phase = 'turn';
+                texasState.message = '转牌圈';
+                break;
+            case 'turn':
+                texasState.community.push(texasState.deck.pop());
+                texasState.phase = 'river';
+                texasState.message = '河牌圈';
+                break;
+            case 'river':
+                texasState.phase = 'showdown';
+                texasShowdown();
+                return;
+        }
+        texasState.currentBet = 0;
+        texasState.playerBet = 0;
+        texasState.aiBet = 0;
+        renderLocalTexasHoldem();
+    }, 800);
+}
+
+function texasShowdown() {
+    // 简化版：比较最大牌
+    const playerBest = Math.max(...texasState.playerHand.map(c => c.num)) + Math.max(...texasState.community.map(c => c.num));
+    const aiBest = Math.max(...texasState.aiHand.map(c => c.num)) + Math.max(...texasState.community.map(c => c.num));
+    
+    if (playerBest >= aiBest) {
+        texasState.message = `🎉 你赢了！(${playerBest} vs ${aiBest})`;
+        texasState.playerChips += texasState.pot;
+    } else {
+        texasState.message = `😤 AI赢了！(${aiBest} vs ${playerBest})`;
+        texasState.aiChips += texasState.pot;
+    }
+    texasState.gameOver = true;
+    renderLocalTexasHoldem();
+}
+
+// ===== 斗地主 =====
+let doudizhuState = null;
+
+function initLocalDouDiZhu() {
+    const deck = createDeck();
+    // 发牌：每人17张，留3张底牌
+    const playerCards = [], ai1Cards = [], ai2Cards = [];
+    for (let i = 0; i < 17; i++) {
+        playerCards.push(deck.pop());
+        ai1Cards.push(deck.pop());
+        ai2Cards.push(deck.pop());
+    }
+    // 排序
+    playerCards.sort((a,b) => b.num - a.num);
+    ai1Cards.sort((a,b) => b.num - a.num);
+    ai2Cards.sort((a,b) => b.num - a.num);
+    
+    const landlordCards = [deck.pop(), deck.pop(), deck.pop()];
+    
+    // 随机决定地主
+    const landlord = Math.floor(Math.random() * 3); // 0=玩家, 1=AI1, 2=AI2
+    
+    doudizhuState = {
+        playerCards: playerCards,
+        ai1Cards: ai1Cards,
+        ai2Cards: ai2Cards,
+        landlordCards: landlordCards,
+        landlord: landlord,
+        currentPlayer: landlord,
+        phase: 'play', // bid, play
+        lastPlay: null,
+        lastPlayer: null,
+        gameOver: false,
+        message: landlord === 0 ? '你是地主！先出牌' : `AI${landlord}是地主`
+    };
+    
+    // 地主拿底牌
+    if (landlord === 0) {
+        doudizhuState.playerCards.push(...landlordCards);
+        doudizhuState.playerCards.sort((a,b) => b.num - a.num);
+    } else if (landlord === 1) {
+        doudizhuState.ai1Cards.push(...landlordCards);
+    } else {
+        doudizhuState.ai2Cards.push(...landlordCards);
+    }
+}
+
+function renderLocalDouDiZhu() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    const gs = doudizhuState;
+    const isRed = (s) => s === '♥' || s === '♦';
+    
+    const renderCardSmall = (card) => {
+        const color = isRed(card.suit) ? '#e94560' : '#fff';
+        return `<div style="width:35px;height:50px;background:#fff;border-radius:5px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;margin:1px;color:${color};font-size:11px;"><span style="font-weight:bold;">${card.value}</span><span>${card.suit}</span></div>`;
+    };
+    
+    let html = '<div style="max-width:400px;margin:0 auto;padding:10px;">';
+    
+    // AI1 (上家)
+    html += `<div style="background:var(--glass-bg);border-radius:10px;padding:10px;margin-bottom:10px;text-align:center;">`;
+    html += `<p style="font-size:12px;color:var(--text-secondary);">AI1 ${gs.landlord===1?'👑':''} (${gs.ai1Cards.length}张)</p>`;
+    html += `<div>${gs.ai1Cards.map(() => '<div style="width:30px;height:42px;background:linear-gradient(135deg,#e94560,#f39c12);border-radius:5px;display:inline-block;margin:1px;"></div>').join('')}</div>`;
+    html += `</div>`;
+    
+    // 出牌区
+    html += `<div style="background:var(--glass-bg);border-radius:10px;padding:15px;margin-bottom:10px;min-height:80px;text-align:center;">`;
+    if (gs.lastPlay) {
+        html += `<p style="font-size:12px;margin-bottom:5px;">${gs.lastPlayer}出牌:</p>`;
+        html += `<div>${gs.lastPlay.map(c => renderCardSmall(c)).join('')}</div>`;
+    } else {
+        html += `<p style="color:var(--text-secondary);">请出牌</p>`;
+    }
+    html += `</div>`;
+    
+    // AI2 (下家)
+    html += `<div style="background:var(--glass-bg);border-radius:10px;padding:10px;margin-bottom:10px;text-align:center;">`;
+    html += `<p style="font-size:12px;color:var(--text-secondary);">AI2 ${gs.landlord===2?'👑':''} (${gs.ai2Cards.length}张)</p>`;
+    html += `<div>${gs.ai2Cards.map(() => '<div style="width:30px;height:42px;background:linear-gradient(135deg,#e94560,#f39c12);border-radius:5px;display:inline-block;margin:1px;"></div>').join('')}</div>`;
+    html += `</div>`;
+    
+    // 玩家手牌
+    html += `<div style="background:var(--glass-bg);border-radius:10px;padding:10px;text-align:center;">`;
+    html += `<p style="font-size:14px;margin-bottom:8px;">你 ${gs.landlord===0?'👑':''} (${gs.playerCards.length}张) - ${gs.message}</p>`;
+    html += `<div style="display:flex;flex-wrap:wrap;justify-content:center;gap:2px;">${gs.playerCards.map((c,i) => `<div onclick="selectDoudizhuCard(${i})" id="ddz-card-${i}" style="width:40px;height:56px;background:#fff;border-radius:6px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;color:${isRed(c.suit)?'#e94560':'#000'};cursor:pointer;border:2px solid transparent;"><span style="font-size:13px;font-weight:bold;">${c.value}</span><span style="font-size:15px;">${c.suit}</span></div>`).join('')}</div>`;
+    html += `</div>`;
+    
+    // 操作按钮
+    if (!gs.gameOver && gs.currentPlayer === 0) {
+        html += `<div style="display:flex;gap:10px;justify-content:center;margin-top:15px;">`;
+        html += `<button onclick="doudizhuPass()" style="padding:10px 20px;background:#7f8c8d;color:#fff;border:none;border-radius:15px;font-size:14px;cursor:pointer;">不出</button>`;
+        html += `<button onclick="doudizhuPlay()" style="padding:10px 20px;background:#e94560;color:#fff;border:none;border-radius:15px;font-size:14px;cursor:pointer;">出牌</button>`;
+        html += `</div>`;
+    }
+    
+    if (gs.gameOver) {
+        html += `<div style="text-align:center;margin-top:15px;"><button onclick="showGameMenu('douDiZhu')" style="padding:12px 30px;background:var(--accent-primary);color:#fff;border:none;border-radius:20px;font-size:16px;cursor:pointer;">再来一局</button></div>`;
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+let selectedDoudizhuCards = [];
+
+function selectDoudizhuCard(index) {
+    const idx = selectedDoudizhuCards.indexOf(index);
+    const el = document.getElementById(`ddz-card-${index}`);
+    if (idx > -1) {
+        selectedDoudizhuCards.splice(idx, 1);
+        if (el) el.style.border = '2px solid transparent';
+    } else {
+        selectedDoudizhuCards.push(index);
+        if (el) el.style.border = '2px solid #e94560';
+    }
+}
+
+function doudizhuPass() {
+    doudizhuState.message = '你不出';
+    selectedDoudizhuCards = [];
+    doudizhuNextPlayer();
+}
+
+function doudizhuPlay() {
+    if (selectedDoudizhuCards.length === 0) {
+        doudizhuState.message = '请选择要出的牌';
+        renderLocalDouDiZhu();
+        return;
+    }
+    
+    // 获取选中的牌
+    const playCards = selectedDoudizhuCards.map(i => doudizhuState.playerCards[i]).sort((a,b) => b.num - a.num);
+    
+    // 验证牌型（简化版：单张、对子、三张、顺子）
+    if (!isValidDoudizhuPlay(playCards)) {
+        doudizhuState.message = '无效的牌型';
+        renderLocalDouDiZhu();
+        return;
+    }
+    
+    // 移除出的牌
+    doudizhuState.playerCards = doudizhuState.playerCards.filter((_,i) => !selectedDoudizhuCards.includes(i));
+    selectedDoudizhuCards = [];
+    
+    doudizhuState.lastPlay = playCards;
+    doudizhuState.lastPlayer = '你';
+    doudizhuState.message = `你出了 ${playCards.length} 张牌`;
+    
+    // 检查胜利
+    if (doudizhuState.playerCards.length === 0) {
+        doudizhuState.gameOver = true;
+        doudizhuState.message = doudizhuState.landlord === 0 ? '🎉 地主获胜！' : '🎉 农民获胜！';
+        renderLocalDouDiZhu();
+        return;
+    }
+    
+    renderLocalDouDiZhu();
+    doudizhuNextPlayer();
+}
+
+function isValidDoudizhuPlay(cards) {
+    if (cards.length === 0) return false;
+    if (cards.length === 1) return true; // 单张
+    if (cards.length === 2) return cards[0].num === cards[1].num; // 对子
+    if (cards.length === 3) return cards[0].num === cards[1].num && cards[1].num === cards[2].num; // 三张
+    if (cards.length >= 5) { // 顺子
+        for (let i = 1; i < cards.length; i++) {
+            if (cards[i-1].num - cards[i].num !== 1) return false;
+        }
+        return true;
+    }
+    return false;
+}
+
+function doudizhuNextPlayer() {
+    doudizhuState.currentPlayer = (doudizhuState.currentPlayer + 1) % 3;
+    renderLocalDouDiZhu();
+    
+    // AI回合
+    if (doudizhuState.currentPlayer !== 0 && !doudizhuState.gameOver) {
+        setTimeout(() => {
+            doudizhuAIMove();
+        }, 1000);
+    }
+}
+
+function doudizhuAIMove() {
+    const aiNum = doudizhuState.currentPlayer;
+    const aiCards = aiNum === 1 ? doudizhuState.ai1Cards : doudizhuState.ai2Cards;
+    const aiName = `AI${aiNum}`;
+    
+    // AI简单策略：出最小的单张
+    if (aiCards.length > 0) {
+        const play = [aiCards.pop()];
+        doudizhuState.lastPlay = play;
+        doudizhuState.lastPlayer = aiName;
+        doudizhuState.message = `${aiName}出了1张牌`;
+        
+        if (aiNum === 1) doudizhuState.ai1Cards = aiCards;
+        else doudizhuState.ai2Cards = aiCards;
+        
+        // 检查胜利
+        if (aiCards.length === 0) {
+            doudizhuState.gameOver = true;
+            const aiIsLandlord = doudizhuState.landlord === aiNum;
+            doudizhuState.message = aiIsLandlord ? `😤 ${aiName}地主获胜！` : `😤 ${aiName}农民获胜！`;
+            renderLocalDouDiZhu();
+            return;
+        }
+    } else {
+        doudizhuState.message = `${aiName}不出`;
+    }
+    
+    renderLocalDouDiZhu();
+    doudizhuNextPlayer();
+}
 
     </script>
 
