@@ -641,11 +641,6 @@
             margin-bottom: 8px;
         }
 
-        .profile-email {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -927,20 +922,20 @@
         <div class="login-container">
             <div style="text-align: center; margin-bottom: 40px;">
                 <div style="font-size: 64px; margin-bottom: 20px;">♟️</div>
-                <h2 style="font-size: 28px; margin-bottom: 10px;">欢迎回来</h2>
-                <p style="color: var(--text-secondary);">登录以继续游戏</p>
+                <h2 style="font-size: 28px; margin-bottom: 10px;" data-i18n="welcome">欢迎回来</h2>
+                <p style="color: var(--text-secondary);" data-i18n="loginSubtitle">登录以继续游戏</p>
             </div>
             <div class="input-group">
-                <label class="input-label">用户名</label>
-                <input type="text" class="input-field" id="login-email" placeholder="请输入用户名">
+                <label class="input-label" data-i18n="username">用户名</label>
+                <input type="text" class="input-field" id="login-email" placeholder="请输入用户名" data-i18n-placeholder="usernamePlaceholder">
             </div>
             <div class="input-group">
-                <label class="input-label">密码</label>
-                <input type="password" class="input-field" id="login-password" placeholder="请输入密码">
+                <label class="input-label" data-i18n="password">密码</label>
+                <input type="password" class="input-field" id="login-password" placeholder="请输入密码" data-i18n-placeholder="passwordPlaceholder">
             </div>
-            <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="handleLogin()">登录</button>
-            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 15px;" onclick="switchPage('register-page')">注册账号</button>
-            <button class="btn btn-guest" style="width: 100%;" onclick="handleGuestLogin()">游客登录</button>
+            <button class="btn btn-primary" style="width: 100%; margin-bottom: 15px;" onclick="handleLogin()" data-i18n="login">登录</button>
+            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 15px;" onclick="switchPage('register-page')" data-i18n="register">注册账号</button>
+            <button class="btn btn-guest" style="width: 100%;" onclick="handleGuestLogin()" data-i18n="guestLogin">游客登录</button>
         </div>
     </div>
 
@@ -1125,7 +1120,6 @@
         <div class="profile-header">
             <div class="profile-avatar" id="profile-avatar">👤</div>
             <div class="profile-name" id="profile-name">玩家</div>
-            <div class="profile-email" id="profile-email">guest@example.com</div>
         </div>
         <div class="stats-grid">
             <div class="stat-card">
@@ -3939,6 +3933,377 @@ const translations = {
         'bg': 'Жълт',
         'ca': 'Groc',
         'sw': 'Njano',
+    },
+
+    // 登录页
+    'welcome': {
+        'zh-CN': '欢迎回来',
+        'zh-TW': '歡迎回來',
+        'zh-CL': '歸來',
+        'zh-XZ': '歸來',
+        'vi':    'Chào mừng trở lại',
+        'en':    'Welcome Back',
+        'fr':    'Bienvenue',
+        'it':    'Bentornato',
+        'haw':   'Aloha',
+        'th':    'ยินดีต้อนรับกลับ',
+        'ja': 'おかえりなさい',
+        'ko': '다시 오셨군요',
+        'de': 'Willkommen zurück',
+        'es': 'Bienvenido',
+        'pt': 'Bem-vindo de volta',
+        'ru': 'С возвращением',
+        'ar': 'مرحباً بعودتك',
+        'hi': 'वापसी पर स्वागत है',
+        'bn': 'ফিরে আসায় স্বাগতম',
+        'tr': 'Tekrar hoş geldiniz',
+        'pl': 'Witaj ponownie',
+        'nl': 'Welkom terug',
+        'sv': 'Välkommen tillbaka',
+        'da': 'Velkommen tilbage',
+        'fi': 'Tervetuloa takaisin',
+        'no': 'Velkommen tilbake',
+        'el': 'Καλώς ήρθες',
+        'he': 'ברוך השב',
+        'id': 'Selamat datang kembali',
+        'ms': 'Selamat kembali',
+        'tl': 'Maligayang pagbalik',
+        'uk': 'З поверненням',
+        'cs': 'Vítejte zpět',
+        'ro': 'Bine ați revenit',
+        'hu': 'Üdv újra',
+        'sr': 'Добродошли назад',
+        'bg': 'Добре дошли обратно',
+        'ca': 'Benvingut de nou',
+        'sw': 'Karibu tena',
+    },
+    'loginSubtitle': {
+        'zh-CN': '登录以继续游戏',
+        'zh-TW': '登入以繼續遊戲',
+        'zh-CL': '登入以弈',
+        'zh-XZ': '登入以弈',
+        'vi':    'Đăng nhập để tiếp tục',
+        'en':    'Login to continue playing',
+        'fr':    'Connectez-vous pour continuer',
+        'it':    'Accedi per continuare',
+        'haw':   'Hoʻokomo e hoʻomau',
+        'th':    'เข้าสู่ระบบเพื่อเล่นต่อ',
+        'ja': 'ログインしてゲームを続けましょう',
+        'ko': '계속하려면 로그인하세요',
+        'de': 'Anmelden um weiterzuspielen',
+        'es': 'Inicia sesión para continuar',
+        'pt': 'Entre para continuar jogando',
+        'ru': 'Войдите, чтобы продолжить',
+        'ar': 'سجل الدخول للمتابعة',
+        'hi': 'खेलना जारी रखने के लिए लॉग इन करें',
+        'bn': 'খেলা চালিয়ে যেতে লগইন করুন',
+        'tr': 'Oynamaya devam etmek için giriş yapın',
+        'pl': 'Zaloguj się, aby grać dalej',
+        'nl': 'Log in om door te gaan',
+        'sv': 'Logga in för att fortsätta',
+        'da': 'Log ind for at fortsætte',
+        'fi': 'Kirjaudu sisään jatkaaksesi',
+        'no': 'Logg inn for å fortsette',
+        'el': 'Συνδεθείτε για να συνεχίσετε',
+        'he': 'התחבר כדי להמשיך',
+        'id': 'Masuk untuk melanjutkan',
+        'ms': 'Log masuk untuk meneruskan',
+        'tl': 'Mag-login upang magpatuloy',
+        'uk': 'Увійдіть, щоб продовжити',
+        'cs': 'Přihlaste se pro pokračování',
+        'ro': 'Conectați-vă pentru a continua',
+        'hu': 'Jelentkezzen be a folytatáshoz',
+        'sr': 'Пријавите се да наставите',
+        'bg': 'Влезте, за да продължите',
+        'ca': 'Inicieu sessió per continuar',
+        'sw': 'Ingia kuendelea',
+    },
+    'username': {
+        'zh-CN': '用户名',
+        'zh-TW': '使用者名稱',
+        'zh-CL': '名',
+        'zh-XZ': '名',
+        'vi':    'Tên người dùng',
+        'en':    'Username',
+        'fr':    "Nom d'utilisateur",
+        'it':    "Nome utente",
+        'haw':   'Inoa kānaka',
+        'th':    'ชื่อผู้ใช้',
+        'ja': 'ユーザー名',
+        'ko': '사용자 이름',
+        'de': 'Benutzername',
+        'es': 'Nombre de usuario',
+        'pt': 'Nome de usuário',
+        'ru': 'Имя пользователя',
+        'ar': 'اسم المستخدم',
+        'hi': 'उपयोगकर्ता नाम',
+        'bn': 'ব্যবহারকারীর নাম',
+        'tr': 'Kullanıcı adı',
+        'pl': 'Nazwa użytkownika',
+        'nl': 'Gebruikersnaam',
+        'sv': 'Användarnamn',
+        'da': 'Brugernavn',
+        'fi': 'Käyttäjätunnus',
+        'no': 'Brukernavn',
+        'el': 'Όνομα χρήστη',
+        'he': 'שם משתמש',
+        'id': 'Nama pengguna',
+        'ms': 'Nama pengguna',
+        'tl': 'Pangalan ng gumagamit',
+        'uk': "Ім'я користувача",
+        'cs': 'Uživatelské jméno',
+        'ro': 'Nume utilizator',
+        'hu': 'Felhasználónév',
+        'sr': 'Корисничко име',
+        'bg': 'Потребителско име',
+        'ca': "Nom d'usuari",
+        'sw': 'Jina la mtumiaji',
+    },
+    'password': {
+        'zh-CN': '密码',
+        'zh-TW': '密碼',
+        'zh-CL': '符',
+        'zh-XZ': '符',
+        'vi':    'Mật khẩu',
+        'en':    'Password',
+        'fr':    'Mot de passe',
+        'it':    'Password',
+        'haw':   'ʻŌlelo huna',
+        'th':    'รหัสผ่าน',
+        'ja': 'パスワード',
+        'ko': '비밀번호',
+        'de': 'Passwort',
+        'es': 'Contraseña',
+        'pt': 'Senha',
+        'ru': 'Пароль',
+        'ar': 'كلمة المرور',
+        'hi': 'पासवर्ड',
+        'bn': 'পাসওয়ার্ড',
+        'tr': 'Şifre',
+        'pl': 'Hasło',
+        'nl': 'Wachtwoord',
+        'sv': 'Lösenord',
+        'da': 'Adgangskode',
+        'fi': 'Salasana',
+        'no': 'Passord',
+        'el': 'Κωδικός πρόσβασης',
+        'he': 'סיסמה',
+        'id': 'Kata sandi',
+        'ms': 'Kata laluan',
+        'tl': 'Password',
+        'uk': 'Пароль',
+        'cs': 'Heslo',
+        'ro': 'Parolă',
+        'hu': 'Jelszó',
+        'sr': 'Лозинка',
+        'bg': 'Парола',
+        'ca': 'Contrasenya',
+        'sw': 'Nenosiri',
+    },
+    'login': {
+        'zh-CN': '登录',
+        'zh-TW': '登入',
+        'zh-CL': '入',
+        'zh-XZ': '入',
+        'vi':    'Đăng nhập',
+        'en':    'Login',
+        'fr':    'Connexion',
+        'it':    'Accedi',
+        'haw':   'Hoʻokomo',
+        'th':    'เข้าสู่ระบบ',
+        'ja': 'ログイン',
+        'ko': '로그인',
+        'de': 'Anmelden',
+        'es': 'Iniciar sesión',
+        'pt': 'Entrar',
+        'ru': 'Войти',
+        'ar': 'تسجيل الدخول',
+        'hi': 'लॉग इन',
+        'bn': 'লগইন',
+        'tr': 'Giriş',
+        'pl': 'Zaloguj się',
+        'nl': 'Log in',
+        'sv': 'Logga in',
+        'da': 'Log ind',
+        'fi': 'Kirjaudu',
+        'no': 'Logg inn',
+        'el': 'Σύνδεση',
+        'he': 'התחבר',
+        'id': 'Masuk',
+        'ms': 'Log masuk',
+        'tl': 'Mag-login',
+        'uk': 'Увійти',
+        'cs': 'Přihlásit se',
+        'ro': 'Conectați-vă',
+        'hu': 'Bejelentkezés',
+        'sr': 'Пријава',
+        'bg': 'Вход',
+        'ca': 'Inicia sessió',
+        'sw': 'Ingia',
+    },
+    'register': {
+        'zh-CN': '注册账号',
+        'zh-TW': '註冊帳號',
+        'zh-CL': '註冊',
+        'zh-XZ': '註冊',
+        'vi':    'Đăng ký',
+        'en':    'Register',
+        'fr':    "S'inscrire",
+        'it':    'Registrati',
+        'haw':   'Kāinoa',
+        'th':    'สมัครสมาชิก',
+        'ja': '新規登録',
+        'ko': '회원가입',
+        'de': 'Registrieren',
+        'es': 'Registrarse',
+        'pt': 'Registrar',
+        'ru': 'Регистрация',
+        'ar': 'إنشاء حساب',
+        'hi': 'पंजीकरण',
+        'bn': 'নিবন্ধন',
+        'tr': 'Kayıt ol',
+        'pl': 'Zarejestruj się',
+        'nl': 'Registreren',
+        'sv': 'Registrera',
+        'da': 'Opret konto',
+        'fi': 'Rekisteröidy',
+        'no': 'Registrer deg',
+        'el': 'Εγγραφή',
+        'he': 'הרשמה',
+        'id': 'Daftar',
+        'ms': 'Daftar',
+        'tl': 'Magparehistro',
+        'uk': 'Реєстрація',
+        'cs': 'Registrovat',
+        'ro': 'Înregistrare',
+        'hu': 'Regisztráció',
+        'sr': 'Регистрација',
+        'bg': 'Регистрация',
+        'ca': 'Registreu-vos',
+        'sw': 'Jisajili',
+    },
+    'guestLogin': {
+        'zh-CN': '游客登录',
+        'zh-TW': '訪客登入',
+        'zh-CL': '客入',
+        'zh-XZ': '客入',
+        'vi':    'Đăng nhập khách',
+        'en':    'Guest Login',
+        'fr':    'Connexion invité',
+        'it':    'Accedi come ospite',
+        'haw':   'Hoʻokomo kānaka',
+        'th':    'เข้าสู่ระบบแบบแขก',
+        'ja': 'ゲストログイン',
+        'ko': '게스트 로그인',
+        'de': 'Gast-Anmeldung',
+        'es': 'Iniciar sesión como invitado',
+        'pt': 'Entrar como convidado',
+        'ru': 'Войти как гость',
+        'ar': 'تسجيل الدخول كضيف',
+        'hi': 'अतिथि लॉग इन',
+        'bn': 'অতিথি লগইন',
+        'tr': 'Misafir girişi',
+        'pl': 'Zaloguj jako gość',
+        'nl': 'Inloggen als gast',
+        'sv': 'Logga in som gäst',
+        'da': 'Log ind som gæst',
+        'fi': 'Kirjaudu vieraana',
+        'no': 'Logg inn som gjest',
+        'el': 'Είσοδος ως επισκέπτης',
+        'he': 'כניסה כאורח',
+        'id': 'Masuk sebagai tamu',
+        'ms': 'Log masuk tetamu',
+        'tl': 'Mag-login bilang bisita',
+        'uk': 'Увійти як гість',
+        'cs': 'Přihlásit jako host',
+        'ro': 'Conectați-vă ca invitat',
+        'hu': 'Bejelentkezés vendégként',
+        'sr': 'Пријава ка гост',
+        'bg': 'Вход като гост',
+        'ca': 'Inicia sessió com a convidat',
+        'sw': 'Ingia kama mgeni',
+    },
+    'usernamePlaceholder': {
+        'zh-CN': '请输入用户名',
+        'zh-TW': '請輸入使用者名稱',
+        'zh-CL': '請書名',
+        'zh-XZ': '請書名',
+        'vi':    'Nhập tên người dùng',
+        'en':    'Enter username',
+        'fr':    "Entrez le nom d'utilisateur",
+        'it':    'Inserisci nome utente',
+        'haw':   'Kakau inoa kānaka',
+        'th':    'กรอกชื่อผู้ใช้',
+        'ja': 'ユーザー名を入力',
+        'ko': '사용자 이름 입력',
+        'de': 'Benutzername eingeben',
+        'es': 'Ingrese nombre de usuario',
+        'pt': 'Digite nome de usuário',
+        'ru': 'Введите имя пользователя',
+        'ar': 'أدخل اسم المستخدم',
+        'hi': 'उपयोगकर्ता नाम दर्ज करें',
+        'bn': 'ব্যবহারকারীর নাম লিখুন',
+        'tr': 'Kullanıcı adı girin',
+        'pl': 'Wpisz nazwę użytkownika',
+        'nl': 'Voer gebruikersnaam in',
+        'sv': 'Ange användarnamn',
+        'da': 'Indtast brugernavn',
+        'fi': 'Syötä käyttäjätunnus',
+        'no': 'Skriv inn brukernavn',
+        'el': 'Εισάγετε όνομα χρήστη',
+        'he': 'הכנס שם משתמש',
+        'id': 'Masukkan nama pengguna',
+        'ms': 'Masukkan nama pengguna',
+        'tl': 'Maglagay ng pangalan',
+        'uk': "Введіть ім'я користувача",
+        'cs': 'Zadejte uživatelské jméno',
+        'ro': 'Introduceți numele utilizatorului',
+        'hu': 'Felhasználónév megadása',
+        'sr': 'Унесите корисничко име',
+        'bg': 'Въведете потребителско име',
+        'ca': "Introdueix el nom d'usuari",
+        'sw': 'Ingiza jina la mtumiaji',
+    },
+    'passwordPlaceholder': {
+        'zh-CN': '请输入密码',
+        'zh-TW': '請輸入密碼',
+        'zh-CL': '請書符',
+        'zh-XZ': '請書符',
+        'vi':    'Nhập mật khẩu',
+        'en':    'Enter password',
+        'fr':    'Entrez le mot de passe',
+        'it':    'Inserisci password',
+        'haw':   'Kakau ʻōlelo huna',
+        'th':    'กรอกรหัสผ่าน',
+        'ja': 'パスワードを入力',
+        'ko': '비밀번호 입력',
+        'de': 'Passwort eingeben',
+        'es': 'Ingrese contraseña',
+        'pt': 'Digite a senha',
+        'ru': 'Введите пароль',
+        'ar': 'أدخل كلمة المرور',
+        'hi': 'पासवर्ड दर्ज करें',
+        'bn': 'পাসওয়ার্ড লিখুন',
+        'tr': 'Şifre girin',
+        'pl': 'Wpisz hasło',
+        'nl': 'Voer wachtwoord in',
+        'sv': 'Ange lösenord',
+        'da': 'Indtast adgangskode',
+        'fi': 'Syötä salasana',
+        'no': 'Skriv inn passord',
+        'el': 'Εισάγετε κωδικό',
+        'he': 'הכנס סיסמה',
+        'id': 'Masukkan kata sandi',
+        'ms': 'Masukkan kata laluan',
+        'tl': 'Maglagay ng password',
+        'uk': 'Введіть пароль',
+        'cs': 'Zadejte heslo',
+        'ro': 'Introduceți parola',
+        'hu': 'Jelszó megadása',
+        'sr': 'Унесите лозинку',
+        'bg': 'Въведете парола',
+        'ca': 'Introdueix la contrasenya',
+        'sw': 'Ingiza nenosiri',
     }
 };
 
@@ -6011,12 +6376,12 @@ function douDiZhuPlay() {
         }
 
         async function handleRegister() {
-            const email = document.getElementById('register-email').value.trim();
+            const username = document.getElementById('register-email').value.trim();
             const nickname = document.getElementById('register-nickname').value.trim();
             const password = document.getElementById('register-password').value;
             const confirm = document.getElementById('register-confirm').value;
             
-            if (!email || !nickname || !password) {
+            if (!username || !nickname || !password) {
                 showModal('错误', '请填写所有字段');
                 return;
             }
@@ -6035,7 +6400,7 @@ function douDiZhuPlay() {
                 const response = await fetch('/api/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, nickname })
+                    body: JSON.stringify({ username, password, nickname })
                 });
                 const data = await response.json();
                 
@@ -6052,10 +6417,10 @@ function douDiZhuPlay() {
         }
 
         async function handleLogin() {
-            const email = document.getElementById('login-email').value.trim();
+            const username = document.getElementById('login-email').value.trim();
             const password = document.getElementById('login-password').value;
             
-            if (!email || !password) {
+            if (!username || !password) {
                 showModal('错误', '请填写用户名和密码');
                 return;
             }
@@ -6064,7 +6429,7 @@ function douDiZhuPlay() {
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
+                    body: JSON.stringify({ username, password })
                 });
                 const data = await response.json();
                 
@@ -6073,7 +6438,6 @@ function douDiZhuPlay() {
                     localStorage.setItem('userToken', userToken);
                     currentUser = { 
                         name: data.user.nickname, 
-                        email: data.user.email, 
                         isGuest: false,
                         stats: data.user.stats
                     };
@@ -6087,7 +6451,7 @@ function douDiZhuPlay() {
         }
 
         function handleGuestLogin() {
-            currentUser = { name: '游客' + Math.floor(Math.random() * 10000), email: 'guest@example.com', isGuest: true };
+            currentUser = { name: '游客' + Math.floor(Math.random() * 10000), isGuest: true };
             userToken = null;
             localStorage.removeItem('userToken');
             loginSuccess();
@@ -6096,7 +6460,6 @@ function douDiZhuPlay() {
         function loginSuccess() {
             document.getElementById('user-name').textContent = currentUser.name;
             document.getElementById('profile-name').textContent = currentUser.name;
-            document.getElementById('profile-email').textContent = currentUser.email;
             document.getElementById('bottom-nav').style.display = 'flex';
             updateStats();
             switchPage('home-page');
@@ -6209,16 +6572,6 @@ function douDiZhuPlay() {
 
         async function handleLogout() {
             showModal('确认退出', '确定要退出登录吗？', async () => {
-                if (userToken && currentUser && !currentUser.isGuest) {
-                    try {
-                        await fetch(`/api/user/${currentUser.email}/logout`, {
-                            method: 'POST',
-                            headers: { 'Authorization': 'Bearer ' + userToken }
-                        });
-                    } catch (e) {
-                        // 忽略错误
-                    }
-                }
                 currentUser = null;
                 userToken = null;
                 localStorage.removeItem('userToken');
@@ -6389,47 +6742,6 @@ let localGameState = null;
 let localGameType = '';
 let localDifficulty = 'normal';
 let localPlayerColor = 'black';
-let localGameMode = 'ai'; // 'ai' 或 'twoPlayer'
-
-function startTwoPlayer() {
-    closeGameMenu();
-    localGameMode = 'twoPlayer'; // 设置双人模式
-    startLocalTwoPlayerGame(selectedGameType);
-}
-
-function startLocalTwoPlayerGame(gameType) {
-    localGameType = gameType;
-    localGameMode = 'twoPlayer';
-    
-    switch(gameType) {
-        case 'gomoku': initLocalGomoku(); break;
-        case 'othello': initLocalOthello(); break;
-        case 'chess': initLocalChess(); break;
-        case 'chineseChess': initLocalChineseChess(); break;
-        case 'go': initLocalGo(); break;
-        case 'checkers': initLocalCheckers(); break;
-        case 'ticTacToe': initLocalTicTacToe(); break;
-        default:
-            alert('该游戏暂不支持双人对战');
-            return;
-    }
-    
-    // 切换到游戏房间页
-    switchPage('game-room-page');
-    
-    // 隐藏侧边栏
-    const sidebar = document.querySelector('#game-room-page .sidebar');
-    if (sidebar) sidebar.style.display = 'none';
-    const gameArea = document.querySelector('#game-room-page .game-area');
-    if (gameArea) {
-        gameArea.style.flex = '1';
-        gameArea.style.minHeight = '60vh';
-        gameArea.style.alignItems = 'center';
-        gameArea.style.justifyContent = 'center';
-    }
-    
-    setTimeout(() => renderLocalGame(), 100);
-}
 
 function startLocalAIGame(gameType, difficulty) {
     localGameType = gameType;
@@ -6582,7 +6894,7 @@ function localGomokuClick(r, c) {
     renderLocalGomoku();
     
     // 如果是AI模式且轮到AI
-    if (localGameMode === 'ai' && localGameState.currentPlayer === 2 && !localGameState.gameOver) {
+    if (localGameState.currentPlayer === 2 && !localGameState.gameOver) {
         setTimeout(() => {
             const move = calculateGomokuAI();
             if (move) {
@@ -6759,7 +7071,7 @@ function localOthelloClick(r, c) {
     renderLocalOthello();
 
     // 如果是AI模式且轮到AI
-    if (localGameMode === 'ai' && nextPlayer === 2 && !localGameState.gameOver) {
+    if (nextPlayer === 2 && !localGameState.gameOver) {
         setTimeout(() => {
             othelloAIMove();
             localGameState.currentPlayer = 1;
@@ -7044,31 +7356,7 @@ function chessClick(r, c) {
     const p = gs.board[r][c];
     const isRedTurn = gs.currentPlayer === 'red';
     
-    // 双人模式：检查是否是当前玩家的棋子
-    if (localGameMode === 'twoPlayer') {
-        // 点击自己的棋子
-        if (p && ((isRedTurn && p === p.toUpperCase()) || (!isRedTurn && p === p.toLowerCase()))) {
-            gs.selected = {r, c};
-            renderLocalChineseChess();
-            return;
-        }
-        
-        // 移动棋子
-        if (gs.selected) {
-            const {r: sr, c: sc} = gs.selected;
-            if (isValidChessMove(sr, sc, r, c, gs.currentPlayer)) {
-                gs.board[r][c] = gs.board[sr][sc];
-                gs.board[sr][sc] = 0;
-                gs.selected = null;
-                gs.currentPlayer = isRedTurn ? 'black' : 'red';
-                renderLocalChineseChess();
-                return;
-            }
-        }
-        return;
-    }
-    
-    // AI模式（原有逻辑）
+    // AI模式
     if (gs.currentPlayer !== 'red') return;
     
     // 点击自己的棋子
@@ -7302,7 +7590,7 @@ function renderLocalChess() {
             const border = gs.selected && gs.selected.r === r && gs.selected.c === c ? '3px solid #e94560' : '1px solid transparent';
             const piece = p ? pieceSymbols[p] || p : '';
             const pieceColor = p && p === p.toUpperCase() ? '#fff' : '#000';
-            html += `<div onclick="chessClick(${r},${c})" style="aspect-ratio:1;background:${bg};border:${border};display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;position:relative;text-shadow:${p && p === p.toUpperCase() ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none'};color:${pieceColor};">${piece}</div>`;
+            html += `<div onclick="chessInternationalClick(${r},${c})" style="aspect-ratio:1;background:${bg};border:${border};display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;position:relative;text-shadow:${p && p === p.toUpperCase() ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none'};color:${pieceColor};">${piece}</div>`;
         }
     }
     html += '</div>';
@@ -7314,6 +7602,166 @@ function renderLocalChess() {
 
     html += '</div>';
     container.innerHTML = html;
+}
+
+function chessInternationalClick(r, c) {
+    const gs = localGameState;
+    if (gs.gameOver || gs.currentPlayer !== 'white') return;
+
+    const p = gs.board[r][c];
+
+    // 点击自己的棋子（白方，大写）
+    if (p && p === p.toUpperCase()) {
+        gs.selected = {r, c};
+        renderLocalChess();
+        return;
+    }
+
+    // 移动棋子
+    if (gs.selected) {
+        const {r: sr, c: sc} = gs.selected;
+        if (isValidInternationalMove(sr, sc, r, c)) {
+            // 检查是否吃掉了对方的王
+            const target = gs.board[r][c];
+            gs.board[r][c] = gs.board[sr][sc];
+            gs.board[sr][sc] = 0;
+            gs.selected = null;
+
+            if (target === 'k') {
+                gs.gameOver = true;
+                gs.winner = 'white';
+                renderLocalChess();
+                return;
+            }
+
+            gs.currentPlayer = 'black';
+            renderLocalChess();
+            setTimeout(chessInternationalAI, 500);
+            return;
+        }
+        gs.selected = null;
+        renderLocalChess();
+    }
+}
+
+function isValidInternationalMove(sr, sc, dr, dc) {
+    const gs = localGameState;
+    const p = gs.board[sr][sc];
+    if (!p || p === 0) return false;
+    const target = gs.board[dr][dc];
+    // 不能吃自己的子
+    if (target && target === target.toUpperCase()) return false;
+    if (sr === dr && sc === dc) return false;
+
+    const type = p.toLowerCase();
+    const diffR = dr - sr;
+    const diffC = dc - sc;
+    const absR = Math.abs(diffR);
+    const absC = Math.abs(diffC);
+
+    switch(type) {
+        case 'p': // 兵
+            if (p === 'P') { // 白兵向上
+                if (sc === dc) {
+                    if (sr === 6 && dr === 4 && !gs.board[5][sc] && !gs.board[4][sc]) return true;
+                    if (dr === sr - 1 && !target) return true;
+                }
+                if (absR === 1 && absC === 1 && dr === sr - 1 && target) return true;
+            } else { // 黑兵向下
+                if (sc === dc) {
+                    if (sr === 1 && dr === 3 && !gs.board[2][sc] && !gs.board[3][sc]) return true;
+                    if (dr === sr + 1 && !target) return true;
+                }
+                if (absR === 1 && absC === 1 && dr === sr + 1 && target) return true;
+            }
+            return false;
+
+        case 'r': // 车
+            if (sr !== dr && sc !== dc) return false;
+            return isPathClear(sr, sc, dr, dc);
+
+        case 'n': // 马
+            if (!((absR === 2 && absC === 1) || (absR === 1 && absC === 2))) return false;
+            // 蹩马腿
+            if (absR === 2) {
+                if (gs.board[sr + diffR/2][sc] !== 0) return false;
+            } else {
+                if (gs.board[sr][sc + diffC/2] !== 0) return false;
+            }
+            return true;
+
+        case 'b': // 象
+            if (absR !== absC) return false;
+            return isPathClear(sr, sc, dr, dc);
+
+        case 'q': // 后
+            if (sr !== dr && sc !== dc && absR !== absC) return false;
+            return isPathClear(sr, sc, dr, dc);
+
+        case 'k': // 王
+            return absR <= 1 && absC <= 1;
+    }
+    return false;
+}
+
+function isPathClear(sr, sc, dr, dc) {
+    const gs = localGameState;
+    const stepR = dr === sr ? 0 : (dr > sr ? 1 : -1);
+    const stepC = dc === sc ? 0 : (dc > sc ? 1 : -1);
+    let r = sr + stepR, c = sc + stepC;
+    while (r !== dr || c !== dc) {
+        if (gs.board[r][c] !== 0) return false;
+        r += stepR;
+        c += stepC;
+    }
+    return true;
+}
+
+function chessInternationalAI() {
+    const gs = localGameState;
+    if (gs.gameOver) return;
+
+    // 收集所有合法走法
+    const moves = [];
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const p = gs.board[r][c];
+            if (p && p === p.toLowerCase()) { // 黑方棋子
+                for (let dr = 0; dr < 8; dr++) {
+                    for (let dc = 0; dc < 8; dc++) {
+                        if (isValidInternationalMove(r, c, dr, dc)) {
+                            const target = gs.board[dr][dc];
+                            const pieceValue = {'p':1,'n':3,'b':3,'r':5,'q':9,'k':100}[target?.toLowerCase()] || 0;
+                            moves.push({sr: r, sc: c, dr, dc, score: pieceValue + Math.random() * 0.5});
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (moves.length === 0) {
+        gs.gameOver = true;
+        gs.winner = 'white';
+        renderLocalChess();
+        return;
+    }
+
+    // 选择最佳走法
+    moves.sort((a, b) => b.score - a.score);
+    const best = moves[0];
+    const target = gs.board[best.dr][best.dc];
+
+    gs.board[best.dr][best.dc] = gs.board[best.sr][best.sc];
+    gs.board[best.sr][best.sc] = 0;
+
+    if (target === 'K') {
+        gs.gameOver = true;
+        gs.winner = 'black';
+    }
+
+    gs.currentPlayer = 'white';
+    renderLocalChess();
 }
 
 function renderLocalGo() {
@@ -7373,26 +7821,127 @@ function renderLocalGo() {
 }
 function goClick(r,c) {
     const size = 19;
-    if (localGameState.gameOver || localGameState.board[r][c] !== 0) return;
+    if (localGameState.gameOver || localGameState.board[r][c] !== 0 || localGameState.currentPlayer !== 1) return;
     
-    const current = localGameState.currentPlayer;
-    localGameState.board[r][c] = current;
-    localGameState.currentPlayer = current === 1 ? 2 : 1;
+    localGameState.board[r][c] = 1;
+    
+    // 检查是否吃掉对方的子
+    const opponent = 2;
+    const neighbors = [[0,1],[0,-1],[1,0],[-1,0]];
+    let captured = false;
+    
+    for (const [dr, dc] of neighbors) {
+        const nr = r + dr, nc = c + dc;
+        if (nr >= 0 && nr < size && nc >= 0 && nc < size && localGameState.board[nr][nc] === opponent) {
+            if (getGroupLiberties(nr, nc, opponent) === 0) {
+                removeGroup(nr, nc, opponent);
+                captured = true;
+            }
+        }
+    }
+    
+    localGameState.currentPlayer = 2;
     renderLocalGo();
     
-    // 如果是AI模式且轮到AI
-    if (localGameMode === 'ai' && localGameState.currentPlayer === 2 && !localGameState.gameOver) {
-        setTimeout(() => {
-            // AI随机走
-            const empties = [];
-            for (let i=0;i<size;i++) for (let j=0;j<size;j++) if (localGameState.board[i][j]===0) empties.push({r:i,c:j});
-            if (empties.length === 0) { localGameState.gameOver = true; }
-            else { const m = empties[Math.floor(Math.random()*empties.length)]; localGameState.board[m.r][m.c] = 2; }
-            localGameState.currentPlayer = 1;
-            renderLocalGo();
-        }, 500);
+    setTimeout(() => {
+        // AI走棋
+        const empties = [];
+        for (let i = 0; i < size; i++)
+            for (let j = 0; j < size; j++)
+                if (localGameState.board[i][j] === 0) empties.push({r: i, c: j});
+        
+        if (empties.length === 0) {
+            localGameState.gameOver = true;
+        } else {
+            // AI优先选择能吃子的位置，否则随机
+            let bestMove = null;
+            for (const m of empties) {
+                localGameState.board[m.r][m.c] = 2;
+                let canCapture = false;
+                for (const [dr, dc] of neighbors) {
+                    const nr = m.r + dr, nc = m.c + dc;
+                    if (nr >= 0 && nr < size && nc >= 0 && nc < size && localGameState.board[nr][nc] === 1) {
+                        if (getGroupLiberties(nr, nc, 1) === 0) {
+                            canCapture = true;
+                            break;
+                        }
+                    }
+                }
+                localGameState.board[m.r][m.c] = 0;
+                if (canCapture) { bestMove = m; break; }
+            }
+            
+            if (!bestMove) bestMove = empties[Math.floor(Math.random() * empties.length)];
+            localGameState.board[bestMove.r][bestMove.c] = 2;
+            
+            // AI吃子
+            for (const [dr, dc] of neighbors) {
+                const nr = bestMove.r + dr, nc = bestMove.c + dc;
+                if (nr >= 0 && nr < size && nc >= 0 && nc < size && localGameState.board[nr][nc] === 1) {
+                    if (getGroupLiberties(nr, nc, 1) === 0) {
+                        removeGroup(nr, nc, 1);
+                    }
+                }
+            }
+        }
+        
+        localGameState.currentPlayer = 1;
+        renderLocalGo();
+    }, 500);
+}
+
+function getGroupLiberties(r, c, player) {
+    const size = 19;
+    const visited = new Set();
+    const stack = [[r, c]];
+    let liberties = 0;
+    
+    while (stack.length > 0) {
+        const [cr, cc] = stack.pop();
+        const key = cr + ',' + cc;
+        if (visited.has(key)) continue;
+        visited.add(key);
+        
+        const neighbors = [[0,1],[0,-1],[1,0],[-1,0]];
+        for (const [dr, dc] of neighbors) {
+            const nr = cr + dr, nc = cc + dc;
+            if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                if (localGameState.board[nr][nc] === 0) {
+                    liberties++;
+                } else if (localGameState.board[nr][nc] === player) {
+                    stack.push([nr, nc]);
+                }
+            }
+        }
+    }
+    
+    return liberties;
+}
+
+function removeGroup(r, c, player) {
+    const size = 19;
+    const visited = new Set();
+    const stack = [[r, c]];
+    
+    while (stack.length > 0) {
+        const [cr, cc] = stack.pop();
+        const key = cr + ',' + cc;
+        if (visited.has(key)) continue;
+        visited.add(key);
+        
+        if (localGameState.board[cr][cc] === player) {
+            localGameState.board[cr][cc] = 0;
+            const neighbors = [[0,1],[0,-1],[1,0],[-1,0]];
+            for (const [dr, dc] of neighbors) {
+                const nr = cr + dr, nc = cc + dc;
+                if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+                    stack.push([nr, nc]);
+                }
+            }
+        }
     }
 }
+
 function initLocalCheckers() {
     const board = Array(8).fill(null).map(() => Array(8).fill(0));
     // 黑方棋子(上方，AI)
@@ -7457,52 +8006,7 @@ function checkersClick(r, c) {
     const current = gs.currentPlayer;
     const opponent = current === 1 ? 2 : 1;
 
-    // 双人模式：检查是否是当前玩家的回合和棋子
-    if (localGameMode === 'twoPlayer') {
-        // 选中自己的棋子
-        if (gs.board[r][c] === current) {
-            gs.selected = {r, c};
-            renderLocalCheckers();
-            return;
-        }
-
-        // 移动
-        if (gs.selected) {
-            const {r: sr, c: sc} = gs.selected;
-            const dr = r - sr;
-            const dc = c - sc;
-            
-            // 红方(1)向上移动，黑方(2)向下移动
-            const direction = current === 1 ? -1 : 1;
-
-            // 普通移动：斜向前一格
-            if (dr === direction && Math.abs(dc) === 1 && gs.board[r][c] === 0) {
-                gs.board[r][c] = current;
-                gs.board[sr][sc] = 0;
-                gs.selected = null;
-                gs.currentPlayer = opponent;
-                renderLocalCheckers();
-                return;
-            }
-
-            // 跳吃：斜向前两格，中间有对方棋子
-            if (Math.abs(dr) === 2 && Math.abs(dc) === 2) {
-                const mr = sr + dr/2, mc = sc + dc/2;
-                if (gs.board[mr][mc] === opponent && gs.board[r][c] === 0) {
-                    gs.board[r][c] = current;
-                    gs.board[sr][sc] = 0;
-                    gs.board[mr][mc] = 0;
-                    gs.selected = null;
-                    gs.currentPlayer = opponent;
-                    renderLocalCheckers();
-                    return;
-                }
-            }
-        }
-        return;
-    }
-
-    // AI模式（原有逻辑）
+    // AI模式
     if (gs.currentPlayer !== 1) return;
 
     // 选中自己的棋子
@@ -7775,20 +8279,20 @@ function renderLocalHorseRacing() {
 }
 
 function selectHorse(index) {
-    horseRacingState.currentHorse = index;
-    horseRacingState.message = `你选择了 ${horseRacingState.horses[index].name}`;
+    localGameState.currentHorse = index;
+    localGameState.message = `你选择了 ${localGameState.horses[index].name}`;
     renderLocalHorseRacing();
 }
 
 function horseRacingBet(amount) {
-    if (amount > horseRacingState.playerChips) return;
-    horseRacingState.playerBet = amount;
-    horseRacingState.message = `下注 ${amount} 筹码`;
+    if (amount > localGameState.playerChips) return;
+    localGameState.playerBet = amount;
+    localGameState.message = `下注 ${amount} 筹码`;
     renderLocalHorseRacing();
 }
 
 function horseRacingStart() {
-    const gs = horseRacingState;
+    const gs = localGameState;
     if (gs.playerBet <= 0) return;
     
     gs.playerChips -= gs.playerBet;
@@ -8236,26 +8740,30 @@ function doudizhuAIMove() {
     const aiCards = aiNum === 1 ? doudizhuState.ai1Cards : doudizhuState.ai2Cards;
     const aiName = `AI${aiNum}`;
     
-    // AI简单策略：出最小的单张
-    if (aiCards.length > 0) {
-        const play = [aiCards.pop()];
-        doudizhuState.lastPlay = play;
-        doudizhuState.lastPlayer = aiName;
-        doudizhuState.message = `${aiName}出了1张牌`;
-        
-        if (aiNum === 1) doudizhuState.ai1Cards = aiCards;
-        else doudizhuState.ai2Cards = aiCards;
-        
-        // 检查胜利
-        if (aiCards.length === 0) {
-            doudizhuState.gameOver = true;
-            const aiIsLandlord = doudizhuState.landlord === aiNum;
-            doudizhuState.message = aiIsLandlord ? `😤 ${aiName}地主获胜！` : `😤 ${aiName}农民获胜！`;
-            renderLocalDouDiZhu();
-            return;
-        }
-    } else {
-        doudizhuState.message = `${aiName}不出`;
+    if (aiCards.length === 0) {
+        // AI没牌了
+        doudizhuState.gameOver = true;
+        const aiIsLandlord = doudizhuState.landlord === aiNum;
+        doudizhuState.message = aiIsLandlord ? `😤 ${aiName}地主获胜！` : `😤 ${aiName}农民获胜！`;
+        renderLocalDouDiZhu();
+        return;
+    }
+    
+    // AI出最小的单张（数组末尾是最小的，因为排序是降序）
+    const play = [aiCards[aiCards.length - 1]];
+    aiCards.splice(aiCards.length - 1, 1);
+    
+    doudizhuState.lastPlay = play;
+    doudizhuState.lastPlayer = aiName;
+    doudizhuState.message = `${aiName}出了1张牌`;
+    
+    // 检查胜利
+    if (aiCards.length === 0) {
+        doudizhuState.gameOver = true;
+        const aiIsLandlord = doudizhuState.landlord === aiNum;
+        doudizhuState.message = aiIsLandlord ? `😤 ${aiName}地主获胜！` : `😤 ${aiName}农民获胜！`;
+        renderLocalDouDiZhu();
+        return;
     }
     
     renderLocalDouDiZhu();
@@ -8466,7 +8974,7 @@ function tttClick(r, c) {
     renderLocalTicTacToe();
     
     // 如果是AI模式且轮到AI
-    if (localGameMode === 'ai' && gs.currentPlayer === 2 && !gs.gameOver) {
+    if (gs.currentPlayer === 2 && !gs.gameOver) {
         setTimeout(() => {
             const empty = [];
             for (let r=0;r<3;r++) for (let c=0;c<3;c++) if (gs.board[r][c]===0) empty.push({r,c});
@@ -8980,9 +9488,6 @@ function animateBilliards() {
         <div style="display:flex; flex-direction:column; gap:12px;">
             <button class="btn btn-primary" onclick="startOfflineAI()" style="padding:15px; font-size:16px;">
                 🤖 人机对战
-            </button>
-            <button class="btn btn-secondary" onclick="startTwoPlayer()" style="padding:15px; font-size:16px;">
-                👥 双人对战
             </button>
             <button class="btn btn-secondary" onclick="closeGameMenu()" style="padding:12px;">
                 取消
