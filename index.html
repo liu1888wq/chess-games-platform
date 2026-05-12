@@ -6538,8 +6538,10 @@ function renderLocalGomoku() {
                 piece = '<div style="width:90%;height:90%;background:radial-gradient(circle at 30% 30%,#fff,#ddd);border-radius:50%;box-shadow:2px 2px 4px rgba(0,0,0,0.3);"></div>';
             }
             
-            const cursor = !gs.gameOver && gs.currentPlayer === 1 && v === 0 ? 'cursor:pointer;' : '';
-            html += '<div onclick="localGomokuClick(' + r + ',' + c + ')" style="aspect-ratio:1;background:' + cellBg + ';display:flex;align-items:center;justify-content:center;' + cursor + 'position:relative;">' + piece + '</div>';
+            const canMove = !gs.gameOver && gs.currentPlayer === 1 && v === 0;
+            const cursor = canMove ? 'cursor:pointer;' : '';
+            const moveIndicator = canMove ? '<div style="width:30%;height:30%;background:rgba(0,255,0,0.3);border-radius:50%;"></div>' : '';
+            html += '<div onclick="localGomokuClick(' + r + ',' + c + ')" style="aspect-ratio:1;background:' + cellBg + ';display:flex;align-items:center;justify-content:center;' + cursor + 'position:relative;">' + piece + moveIndicator + '</div>';
         }
     }
     html += '</div></div>';
@@ -6930,8 +6932,7 @@ function pokerStand() {
 }
 
 // ===== 其他游戏占位 =====
-function initLocalChess() { initLocalGomoku(); localGameState.isChess = true; }
-function initLocalChineseChess() { initLocalGomoku(); localGameState.isChess = true; }
+// initLocalChess 和 initLocalChineseChess 的完整实现在下方
 function initLocalGo() {
     const size = 19;
     localGameState = { 
@@ -7020,8 +7021,11 @@ function renderLocalChineseChess() {
             const red = isPiece && isRed(p);
             const bg = (r + c) % 2 === 0 ? '#DEB887' : '#C4A574';
             const border = gs.selected && gs.selected.r === r && gs.selected.c === c ? '3px solid #e94560' : '1px solid #654321';
+            // 显示可移动格子提示（小绿点）- 空格子且轮到玩家
+            const canMove = !gs.gameOver && gs.currentPlayer === 'red' && !isPiece;
+            const moveIndicator = canMove ? '<div style="width:30%;height:30%;background:rgba(0,255,0,0.3);border-radius:50%;"></div>' : '';
             
-            html += `<div onclick="chessClick(${r},${c})" style="aspect-ratio:1;background:${bg};border:${border};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;color:${red?'#c00':'#000'};cursor:pointer;${isPiece?'text-shadow:1px 1px 2px rgba(0,0,0,0.5);':''}">${isPiece ? pieceChars[p] : ''}</div>`;
+            html += `<div onclick="chessClick(${r},${c})" style="aspect-ratio:1;background:${bg};border:${border};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:bold;color:${red?'#c00':'#000'};cursor:pointer;position:relative;${isPiece?'text-shadow:1px 1px 2px rgba(0,0,0,0.5);':''}">${isPiece ? pieceChars[p] : ''}${moveIndicator}</div>`;
         }
     }
     html += '</div></div>';
@@ -7243,16 +7247,79 @@ function getPieceValue(p) {
 }
 
 // ===== 其他游戏简化版 =====
-function initLocalChess() { initLocalChineseChess(); }
+// 国际象棋使用独立的初始化
+function initLocalChess() {
+    // 8x8国际象棋棋盘简化版
+    localGameState = {
+        board: [
+            ['r','n','b','q','k','b','n','r'],
+            ['p','p','p','p','p','p','p','p'],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            [0,0,0,0,0,0,0,0],
+            ['P','P','P','P','P','P','P','P'],
+            ['R','N','B','Q','K','B','N','R']
+        ],
+        currentPlayer: 'white',
+        selected: null,
+        gameOver: false,
+        winner: null
+    };
+}
 function initLocalGo() {
     const size = 19;
-    localGameState = { 
-        board: Array(size).fill(null).map(() => Array(size).fill(0)), 
-        currentPlayer: 1, 
-        gameOver: false 
+    localGameState = {
+        board: Array(size).fill(null).map(() => Array(size).fill(0)),
+        currentPlayer: 1,
+        gameOver: false
     };
     renderLocalGo();
 }
+
+// 国际象棋渲染函数
+function renderLocalChess() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    const gs = localGameState;
+
+    const pieceSymbols = {
+        'k': '♚', 'q': '♛', 'r': '♜', 'b': '♝', 'n': '♞', 'p': '♟',
+        'K': '♔', 'Q': '♕', 'R': '♖', 'B': '♗', 'N': '♘', 'P': '♙'
+    };
+
+    let html = '<div style="max-width:360px;margin:0 auto;padding:10px;">';
+    html += '<div style="text-align:center;margin-bottom:10px;padding:8px;background:var(--glass-bg);border-radius:10px;">';
+    html += '<h3 style="color:#fff;margin:0;">♟️ 国际象棋</h3>';
+    html += '<p style="color:var(--accent-primary);margin:5px 0 0;">' + (gs.currentPlayer === 'white' ? '你的回合 (白方)' : 'AI思考中...') + '</p>';
+    html += '</div>';
+
+    html += '<div style="display:grid;grid-template-columns:repeat(8,1fr);gap:1px;background:#8B4513;padding:10px;border-radius:10px;">';
+    for (let r = 0; r < 8; r++) {
+        for (let c = 0; c < 8; c++) {
+            const p = gs.board[r][c];
+            const isDark = (r + c) % 2 === 1;
+            const bg = isDark ? '#769656' : '#eeeed2';
+            const border = gs.selected && gs.selected.r === r && gs.selected.c === c ? '3px solid #e94560' : '1px solid transparent';
+            const piece = p ? pieceSymbols[p] || p : '';
+            const pieceColor = p && p === p.toUpperCase() ? '#fff' : '#000';
+            // 显示可移动格子提示（小绿点）
+            const canMove = !gs.gameOver && gs.currentPlayer === 'white' && !p;
+            const moveIndicator = canMove ? '<div style="width:30%;height:30%;background:rgba(0,255,0,0.3);border-radius:50%;"></div>' : '';
+            html += `<div onclick="chessClick(${r},${c})" style="aspect-ratio:1;background:${bg};border:${border};display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;position:relative;text-shadow:${p && p === p.toUpperCase() ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none'};color:${pieceColor};">${piece}${moveIndicator}</div>`;
+        }
+    }
+    html += '</div>';
+
+    if (gs.gameOver) {
+        let msg = gs.winner === 'white' ? '🎉 你赢了！' : '😤 AI赢了！';
+        html += `<div style="text-align:center;margin-top:15px;"><p style="font-size:20px;margin-bottom:10px;">${msg}</p><button class="btn btn-primary" onclick="showGameMenu('chess')">再来一局</button></div>`;
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
 function renderLocalGo() {
     const container = document.getElementById('game-board');
     if (!container) return;
@@ -7288,8 +7355,11 @@ function renderLocalGo() {
                 piece = '<div style="width:90%;height:90%;background:radial-gradient(circle at 30% 30%,#fff,#ddd);border-radius:50%;box-shadow:2px 2px 3px rgba(0,0,0,0.3);"></div>';
             }
             
-            const cursor = localGameState.currentPlayer === 1 && v === 0 && !localGameState.gameOver ? 'cursor:pointer;' : '';
-            html += '<div onclick="goClick(' + r + ',' + c + ')" style="aspect-ratio:1;background:' + cellBg + ';display:flex;align-items:center;justify-content:center;' + cursor + 'min-width:15px;min-height:15px;">' + piece + '</div>';
+            const canMove = localGameState.currentPlayer === 1 && v === 0 && !localGameState.gameOver;
+            const cursor = canMove ? 'cursor:pointer;' : '';
+            // 显示可移动格子提示（小绿点）
+            const moveIndicator = canMove ? '<div style="width:30%;height:30%;background:rgba(0,255,0,0.3);border-radius:50%;"></div>' : '';
+            html += '<div onclick="goClick(' + r + ',' + c + ')" style="aspect-ratio:1;background:' + cellBg + ';display:flex;align-items:center;justify-content:center;' + cursor + 'min-width:15px;min-height:15px;position:relative;">' + piece + moveIndicator + '</div>';
         }
     }
     html += '</div></div>';
@@ -7370,7 +7440,13 @@ function renderLocalCheckers() {
             if (v === 1) piece = '<div style="width:80%;height:80%;background:radial-gradient(circle,#ff6b6b,#c0392b);border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>';
             else if (v === 2) piece = '<div style="width:80%;height:80%;background:radial-gradient(circle,#555,#111);border-radius:50%;box-shadow:0 2px 4px rgba(0,0,0,0.5);"></div>';
 
-            html += `<div onclick="checkersClick(${r},${c})" style="aspect-ratio:1;background:${bg};${border}display:flex;align-items:center;justify-content:center;cursor:pointer;">${piece}</div>`;
+            // 显示可移动格子提示（小绿点）
+            let moveIndicator = '';
+            if (!gs.gameOver && gs.currentPlayer === 1 && v === 0 && isDark) {
+                moveIndicator = '<div style="width:30%;height:30%;background:rgba(0,255,0,0.3);border-radius:50%;"></div>';
+            }
+
+            html += `<div onclick="checkersClick(${r},${c})" style="aspect-ratio:1;background:${bg};${border}display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;">${piece}${moveIndicator}</div>`;
         }
     }
     html += '</div>';
@@ -8370,8 +8446,11 @@ function renderLocalTicTacToe() {
             const v = gs.board[r][c];
             const sym = v === 1 ? '×' : v === 2 ? '○' : '';
             const color = v === 1 ? '#e94560' : v === 2 ? '#3498db' : '#666';
-            const cursor = !gs.gameOver && gs.currentPlayer === 1 && v === 0 ? 'cursor:pointer;' : '';
-            html += '<div onclick="tttClick('+r+','+c+')" style="aspect-ratio:1;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:50px;font-weight:bold;color:'+color+';'+cursor+'">'+sym+'</div>';
+            const canMove = !gs.gameOver && gs.currentPlayer === 1 && v === 0;
+            const cursor = canMove ? 'cursor:pointer;' : '';
+            // 显示可移动格子提示（小绿点）
+            const moveIndicator = canMove ? '<div style="width:20%;height:20%;background:rgba(0,255,0,0.4);border-radius:50%;"></div>' : '';
+            html += '<div onclick="tttClick('+r+','+c+')" style="aspect-ratio:1;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:50px;font-weight:bold;color:'+color+';'+cursor+'position:relative;">'+sym+moveIndicator+'</div>';
         }
     }
     html += '</div>';
@@ -8431,15 +8510,17 @@ function isTicTacToeDraw() {
 // ===== 斗兽棋 =====
 
 function initLocalAnimalChess() {
+    // 10种动物，数字越大越强
     localGameState = {
         pieces: [
             {id:1, name:'鼠', rank:1}, {id:2, name:'猫', rank:2},
             {id:3, name:'狗', rank:3}, {id:4, name:'狼', rank:4},
-            {id:5, name:'豹', rank:5}, {id:6, name:'狮', rank:6},
-            {id:7, name:'虎', rank:7}, {id:8, name:'象', rank:8}
+            {id:5, name:'豹', rank:5}, {id:6, name:'虎', rank:6},
+            {id:7, name:'狮', rank:7}, {id:8, name:'象', rank:8},
+            {id:9, name:'龙', rank:9}, {id:10, name:'凤', rank:10}
         ],
-        playerPieces: [1,3,5,7],
-        aiPieces: [2,4,6,8],
+        playerPieces: [1,3,5,7,9],  // 玩家有鼠、狗、豹、狮、龙
+        aiPieces: [2,4,6,8,10],     // AI有猫、狼、虎、象、凤
         board: [],
         currentPlayer: 'player',
         selected: null,
@@ -8447,11 +8528,13 @@ function initLocalAnimalChess() {
         winner: null
     };
     
+    // 5x5棋盘
     localGameState.board = [
-        [8, 6, 4, 2],
-        [0, 0, 0, 0],
-        [0, 0, 0, 0],
-        [7, 5, 3, 1]
+        [10, 8, 6, 4, 2],  // AI第一排
+        [0, 0, 0, 0, 0],   // 空
+        [0, 0, 0, 0, 0],   // 空
+        [0, 0, 0, 0, 0],   // 空
+        [9, 7, 5, 3, 1]    // 玩家第一排
     ];
 }
 
@@ -8459,16 +8542,16 @@ function renderLocalAnimalChess() {
     const container = document.getElementById('game-board');
     if (!container) return;
     const gs = localGameState;
-    const pieces = {1:'鼠',2:'猫',3:'狗',4:'狼',5:'豹',6:'狮',7:'虎',8:'象'};
+    const pieces = {1:'鼠',2:'猫',3:'狗',4:'狼',5:'豹',6:'虎',7:'狮',8:'象',9:'龙',10:'凤'};
     
-    let html = '<div style="max-width:350px;margin:0 auto;padding:10px;">';
+    let html = '<div style="max-width:380px;margin:0 auto;padding:10px;">';
     html += '<h3 style="text-align:center;margin-bottom:10px;">🦁 斗兽棋</h3>';
     html += '<p style="text-align:center;margin-bottom:10px;color:var(--accent-primary);">'+(gs.currentPlayer === 'player' ? '你的回合' : 'AI思考中...')+'</p>';
-    html += '<p style="text-align:center;font-size:12px;color:var(--text-secondary);margin-bottom:10px;">规则：大吃小，象最大(8)，鼠最小(1)。同等级平局。</p>';
+    html += '<p style="text-align:center;font-size:12px;color:var(--text-secondary);margin-bottom:10px;">规则：大吃小，凤最大(10)，鼠最小(1)。同等级平局。</p>';
     
-    html += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;background:#228B22;padding:10px;border-radius:12px;">';
-    for (let r = 0; r < 4; r++) {
-        for (let c = 0; c < 4; c++) {
+    html += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:3px;background:#228B22;padding:10px;border-radius:12px;">';
+    for (let r = 0; r < 5; r++) {
+        for (let c = 0; c < 5; c++) {
             const v = gs.board[r][c];
             const isPlayer = v > 0 && gs.playerPieces.includes(Math.abs(v));
             const border = gs.selected && gs.selected.r === r && gs.selected.c === c ? '3px solid #e94560' : '2px solid #228B22';
@@ -8476,13 +8559,18 @@ function renderLocalAnimalChess() {
             if (v > 0) {
                 bg = isPlayer ? '#e94560' : '#3498db';
             }
+            // 显示可移动格子提示（小绿点）
+            let moveIndicator = '';
+            if (!gs.gameOver && gs.currentPlayer === 'player' && v === 0) {
+                moveIndicator = '<div style="width:30%;height:30%;background:rgba(0,255,0,0.3);border-radius:50%;"></div>';
+            }
             let piece = '';
             if (v !== 0) {
                 const pieceName = pieces[Math.abs(v)];
                 const emoji = isPlayer ? '🔴' : '🔵';
                 piece = '<div style="text-align:center;"><div style="font-size:20px;">'+emoji+'</div><div style="font-size:10px;color:#fff;">'+pieceName+'</div></div>';
             }
-            html += '<div onclick="animalClick('+r+','+c+')" style="aspect-ratio:1;background:'+bg+';'+border+';border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:60px;">'+piece+'</div>';
+            html += '<div onclick="animalClick('+r+','+c+')" style="aspect-ratio:1;background:'+bg+';'+border+';border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;min-height:50px;position:relative;">'+piece+moveIndicator+'</div>';
         }
     }
     html += '</div>';
@@ -8540,11 +8628,11 @@ function canAnimalMove(sr, sc, dr, dc) {
 function animalAIMove() {
     const gs = localGameState;
     const moves = [];
-    for (let r = 0; r < 4; r++)
-        for (let c = 0; c < 4; c++)
+    for (let r = 0; r < 5; r++)
+        for (let c = 0; c < 5; c++)
             if (gs.board[r][c] > 0 && gs.aiPieces.includes(gs.board[r][c]))
-                for (let dr = 0; dr < 4; dr++)
-                    for (let dc = 0; dc < 4; dc++)
+                for (let dr = 0; dr < 5; dr++)
+                    for (let dc = 0; dc < 5; dc++)
                         if (canAnimalMove(r, c, dr, dc)) {
                             const target = gs.board[dr][dc];
                             let score = Math.random();
@@ -8654,15 +8742,20 @@ function militaryClick(r, c) {
     
     const v = gs.board[r][c];
     
-    if (v > 0) {
+    // 选中己方棋子（玩家在下方，r >= 2 是玩家区域）
+    if (v > 0 && r >= 2) {
         gs.selected = {r, c};
         renderLocalMilitaryChess();
         return;
     }
     
+    // 移动
     if (gs.selected) {
         const {r: sr, c: sc} = gs.selected;
-        if (Math.abs(r - sr) === 1 && c === sc) {
+        // 只能上下左右移动一步
+        const dr = Math.abs(r - sr);
+        const dc = Math.abs(c - sc);
+        if (dr + dc === 1) {
             gs.board[r][c] = gs.board[sr][sc];
             gs.board[sr][sc] = 0;
             gs.selected = null;
@@ -9128,6 +9221,11 @@ function renderMusicList(filter = '') {
 
 function renderFavList() {
     const container = document.getElementById('fav-list');
+    if (!container) return;
+
+    // 重新读取收藏
+    favorites = JSON.parse(localStorage.getItem('musicFavorites') || '[]');
+
     if (favorites.length === 0) {
         container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.5);">还没有收藏歌曲<br><small>点击歌曲右侧的 🤍 收藏</small></div>';
         return;
@@ -9169,6 +9267,14 @@ function toggleFavorite(idx) {
 
 // 使用 Web Audio API 生成简单旋律
 function playTrack(idx) {
+    // 确保音频上下文已创建
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+
     currentTrackIndex = idx;
     const track = musicLibrary[idx];
 
