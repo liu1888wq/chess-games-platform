@@ -1316,7 +1316,7 @@
 // i18n 国际化翻译系统 - 190种语言
 // ============================================================
 
-const LANGUAGES = {
+var LANGUAGES = {
     'zh-CN': { name: '中文简体', native: '简体中文', flag: '🇨🇳', fontClass: '' },
     'zh-TW': { name: '中文繁體', native: '繁體中文', flag: '🇹🇼', fontClass: '' },
     'zh-CL': { name: '文言文',   native: '古文雅言', flag: '📜', fontClass: '' },
@@ -1522,7 +1522,7 @@ const LANGUAGES = {
 };
 
 // 翻译映射表 - 用于聊天翻译的语言代码映射
-const TRANSLATE_LANG_MAP = {
+var TRANSLATE_LANG_MAP = {
     'zh-CN': 'zh-CN',
     'zh-TW': 'zh-TW',
     'zh-CL': 'zh-CN',   // 文言文翻译为简体中文再转换
@@ -1607,7 +1607,7 @@ const TRANSLATE_LANG_MAP = {
 // ============================================================
 // UI文本翻译
 // ============================================================
-const translations = {
+var translations = {
     // 标题
     'title': {
         'zh-CN': '🎮 棋类游戏平台',
