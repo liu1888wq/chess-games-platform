@@ -1238,71 +1238,52 @@
     <!-- 排行榜页面 -->
     <div id="rank-page" class="page">
         <div class="page-header">
-            <h1 class="page-title">🏆 排行榜</h1>
+            <h1 class="page-title">🏆 排行榜 TOP 1000</h1>
         </div>
         
-        <div style="padding: 20px;">
-            <!-- 前三名 -->
-            <div style="display: flex; justify-content: center; align-items: flex-end; margin-bottom: 30px; gap: 10px;">
+        <div style="padding: 15px;">
+            <!-- 前三名特殊展示 -->
+            <div style="display: flex; justify-content: center; align-items: flex-end; margin-bottom: 20px; gap: 8px;">
                 <!-- 第二名 -->
-                <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #C0C0C0, #E8E8E8); border-radius: 15px; width: 100px;">
-                    <div style="font-size: 30px; margin-bottom: 5px;">🥈</div>
-                    <div style="font-weight: bold; color: #333;">Gibel</div>
-                    <div style="font-size: 12px; color: #666; margin-top: 5px;">胜率 99.6%</div>
-                    <div style="font-size: 11px; color: #888;">72,000局</div>
-                    <div style="font-size: 10px; color: #e94560; margin-top: 3px;">+450/天</div>
+                <div style="text-align: center; padding: 12px; background: linear-gradient(135deg, #C0C0C0, #E8E8E8); border-radius: 12px; width: 90px;">
+                    <div style="font-size: 28px; margin-bottom: 3px;">🥈</div>
+                    <div style="font-weight: bold; color: #333; font-size: 14px;">Gibel</div>
+                    <div style="font-size: 11px; color: #666;">胜率 99.6%</div>
+                    <div style="font-size: 10px; color: #888;">72,000局</div>
                 </div>
                 
                 <!-- 第一名 -->
-                <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #FFD700, #FFA500); border-radius: 15px; width: 120px; transform: translateY(-10px);">
-                    <div style="font-size: 40px; margin-bottom: 5px;">👑</div>
-                    <div style="font-weight: bold; color: #333; font-size: 18px;">liu</div>
-                    <div style="font-size: 14px; color: #666; margin-top: 5px;">胜率 99.8%</div>
-                    <div style="font-size: 12px; color: #888;">80,000局</div>
-                    <div style="font-size: 11px; color: #e94560; margin-top: 3px;">+1,000/天 🔥</div>
+                <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #FFD700, #FFA500); border-radius: 12px; width: 100px; transform: translateY(-8px);">
+                    <div style="font-size: 35px; margin-bottom: 3px;">👑</div>
+                    <div style="font-weight: bold; color: #333; font-size: 16px;">liu</div>
+                    <div style="font-size: 12px; color: #666;">胜率 99.8%</div>
+                    <div style="font-size: 10px; color: #888;">80,000局</div>
                 </div>
                 
                 <!-- 第三名 -->
-                <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #CD7F32, #D4A574); border-radius: 15px; width: 100px;">
-                    <div style="font-size: 30px; margin-bottom: 5px;">🥉</div>
-                    <div style="font-weight: bold; color: #333;">Player3</div>
-                    <div style="font-size: 12px; color: #666; margin-top: 5px;">胜率 98.5%</div>
-                    <div style="font-size: 11px; color: #888;">65,000局</div>
-                    <div style="font-size: 10px; color: #e94560; margin-top: 3px;">+300/天</div>
+                <div style="text-align: center; padding: 12px; background: linear-gradient(135deg, #CD7F32, #D4A574); border-radius: 12px; width: 90px;">
+                    <div style="font-size: 28px; margin-bottom: 3px;">🥉</div>
+                    <div style="font-weight: bold; color: #333; font-size: 14px;" id="rank-3-name">Phoenix</div>
+                    <div style="font-size: 11px; color: #666;" id="rank-3-rate">胜率 98.5%</div>
+                    <div style="font-size: 10px; color: #888;" id="rank-3-games">65,000局</div>
                 </div>
             </div>
             
-            <!-- 其他排名 -->
-            <div style="background: var(--glass-bg); border-radius: 15px; padding: 15px;">
-                <h3 style="margin-bottom: 15px; color: var(--accent-primary);">其他玩家</h3>
-                
-                <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass-border);">
-                    <span style="color: #888;">4. Dragon</span>
-                    <span style="color: var(--accent-primary);">胜率 97.2%</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass-border);">
-                    <span style="color: #888;">5. Master</span>
-                    <span style="color: var(--accent-primary);">胜率 96.8%</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass-border);">
-                    <span style="color: #888;">6. King</span>
-                    <span style="color: var(--accent-primary);">胜率 95.5%</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass-border);">
-                    <span style="color: #888;">7. Queen</span>
-                    <span style="color: var(--accent-primary);">胜率 94.2%</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; padding: 12px;">
-                    <span style="color: #888;">8. Ace</span>
-                    <span style="color: var(--accent-primary);">胜率 93.1%</span>
-                </div>
+            <!-- 搜索框 -->
+            <div style="margin-bottom: 15px;">
+                <input type="text" id="rank-search" placeholder="搜索玩家..." oninput="filterRankList()" style="width: 100%; padding: 12px 15px; border: 1px solid var(--glass-border); border-radius: 10px; background: var(--glass-bg); color: var(--text-primary); font-size: 14px;">
+            </div>
+            
+            <!-- 排名列表容器 -->
+            <div id="rank-list" style="background: var(--glass-bg); border-radius: 15px; max-height: 50vh; overflow-y: auto;">
+                <!-- 由JavaScript动态生成 -->
             </div>
             
             <!-- 统计信息 -->
-            <div style="margin-top: 20px; padding: 15px; background: var(--glass-bg); border-radius: 15px; text-align: center;">
-                <p style="color: var(--text-secondary); font-size: 14px;">今日新增对局</p>
-                <p style="font-size: 28px; font-weight: bold; color: var(--accent-primary); margin-top: 5px;">12,847</p>
-                <p style="color: var(--text-secondary); font-size: 12px; margin-top: 5px;">全平台累计 2,456,789 局</p>
+            <div style="margin-top: 15px; padding: 12px; background: var(--glass-bg); border-radius: 12px; text-align: center;">
+                <p style="color: var(--text-secondary); font-size: 12px;">今日新增对局</p>
+                <p style="font-size: 24px; font-weight: bold; color: var(--accent-primary); margin-top: 3px;">12,847</p>
+                <p style="color: var(--text-secondary); font-size: 11px; margin-top: 3px;">全平台累计 2,456,789 局</p>
             </div>
         </div>
     </div>
@@ -6123,7 +6104,10 @@ function douDiZhuPlay() {
             event.currentTarget.classList.add('active');
             if (tab === 'home') switchPage('home-page');
             else if (tab === 'profile') switchPage('profile-page');
-            else if (tab === 'rank') switchPage('rank-page');
+            else if (tab === 'rank') {
+                switchPage('rank-page');
+                setTimeout(() => renderRankList(), 50);
+            }
         }
 
         function enterGame(gameType) {
@@ -6240,11 +6224,104 @@ function douDiZhuPlay() {
             });
         }
 
+        // ===== 排行榜系统 =====
+        let rankData = [];
+
+        const aiNamePrefixes = ['Shadow', 'Storm', 'Fire', 'Ice', 'Thunder', 'Wind', 'Earth', 'Water', 'Light', 'Dark', 'Star', 'Moon', 'Sun', 'Sky', 'Ocean', 'Mountain', 'Forest', 'River', 'Desert', 'Valley', 'Crystal', 'Diamond', 'Ruby', 'Emerald', 'Sapphire', 'Golden', 'Silver', 'Bronze', 'Iron', 'Steel', 'Dragon', 'Phoenix', 'Tiger', 'Lion', 'Wolf', 'Eagle', 'Hawk', 'Falcon', 'Raven', 'Cobra', 'Viper', 'Panther', 'Leopard', 'Jaguar', 'Bear', 'Bison', 'Rhino', 'Shark', 'Whale', 'Dolphin'];
+        const aiNameSuffixes = ['Master', 'King', 'Lord', 'Knight', 'Warrior', 'Hunter', 'Slayer', 'Champion', 'Legend', 'Hero', 'Elite', 'Pro', 'Expert', 'Genius', 'Wizard', 'Mage', 'Ninja', 'Samurai', 'Viking', 'Spartan', 'Titan', 'Giant', 'Dwarf', 'Elf', 'Oracle', 'Sage', 'Prophet', 'Saint', 'Demon', 'Angel', 'Ghost', 'Spirit', 'Soul', 'Heart', 'Mind', 'Blade', 'Shield', 'Armor', 'Crown', 'Throne'];
+        const aiNameMiddles = ['', 'X', 'Alpha', 'Beta', 'Omega', 'Zero', 'One', 'Neo', 'Ultra', 'Mega', 'Super', 'Hyper', 'Turbo', 'Cyber', 'Techno', 'Quantum', 'Cosmic', 'Solar', 'Lunar', 'Stellar'];
+
+        function generateAIName() {
+            const prefix = aiNamePrefixes[Math.floor(Math.random() * aiNamePrefixes.length)];
+            const middle = aiNameMiddles[Math.floor(Math.random() * aiNameMiddles.length)];
+            const suffix = aiNameSuffixes[Math.floor(Math.random() * aiNameSuffixes.length)];
+            
+            if (middle && Math.random() > 0.5) {
+                return prefix + middle + suffix;
+            }
+            return prefix + suffix;
+        }
+
+        function initRankData() {
+            if (rankData.length > 0) return;
+            
+            // 第一名和第二名固定
+            rankData = [
+                { rank: 1, name: 'liu', winRate: 99.8, games: 80000, dailyAdd: 1000 },
+                { rank: 2, name: 'Gibel', winRate: 99.6, games: 72000, dailyAdd: 450 }
+            ];
+            
+            // 生成第3-1000名
+            for (let i = 3; i <= 1000; i++) {
+                const winRate = Math.max(50, 98.5 - (i - 3) * 0.04 + Math.random() * 0.5);
+                const games = Math.max(100, Math.floor(65000 - (i - 3) * 60 + Math.random() * 500));
+                const dailyAdd = Math.max(1, Math.floor(300 - (i - 3) * 0.3 + Math.random() * 10));
+                
+                rankData.push({
+                    rank: i,
+                    name: generateAIName(),
+                    winRate: Math.round(winRate * 10) / 10,
+                    games: games,
+                    dailyAdd: dailyAdd
+                });
+            }
+        }
+
+        function renderRankList(filter = '') {
+            const container = document.getElementById('rank-list');
+            if (!container) return;
+            
+            initRankData();
+            
+            let filtered = rankData;
+            if (filter) {
+                filtered = rankData.filter(r => r.name.toLowerCase().includes(filter.toLowerCase()));
+            }
+            
+            let html = '';
+            filtered.forEach((player, idx) => {
+                const actualRank = player.rank;
+                
+                if (actualRank <= 3) return; // 前三名单独显示
+                
+                const isEven = actualRank % 2 === 0;
+                const bg = isEven ? 'rgba(255,255,255,0.02)' : 'transparent';
+                
+                html += '<div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; border-bottom: 1px solid var(--glass-border); background: ' + bg + ';">';
+                html += '<div style="display: flex; align-items: center; gap: 10px;">';
+                html += '<span style="width: 35px; text-align: center; color: #888; font-size: 12px;">' + actualRank + '</span>';
+                html += '<span style="color: var(--text-primary); font-size: 14px;">' + player.name + '</span>';
+                html += '</div>';
+                html += '<div style="text-align: right;">';
+                html += '<span style="color: var(--accent-primary); font-size: 13px;">' + player.winRate + '%</span>';
+                html += '<span style="color: #888; font-size: 11px; margin-left: 8px;">' + player.games.toLocaleString() + '局</span>';
+                html += '</div>';
+                html += '</div>';
+            });
+            
+            if (filtered.length === 0) {
+                html = '<div style="padding: 30px; text-align: center; color: var(--text-secondary);">未找到匹配的玩家</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function filterRankList() {
+            const search = document.getElementById('rank-search');
+            const filter = search ? search.value : '';
+            renderRankList(filter);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             renderCountries();
             // 确保语言页面的确认按钮初始禁用
             const btn = document.getElementById('confirm-lang-btn');
             if (btn) btn.disabled = true;
+            // 初始化排行榜数据
+            setTimeout(() => {
+                initRankData();
+                renderRankList();
+            }, 100);
         });
 
         // 页面加载后立即初始化
