@@ -6350,7 +6350,9 @@ const gameNames = {
     'chess': '国际象棋', 'go': '围棋', 'chineseChess': '中国象棋',
     'gomoku': '五子棋', 'othello': '黑白棋', 'checkers': '跳棋',
     'flightChess': '飞行棋', 'poker': '21点', 'texasHoldem': '德州扑克',
-    'douDiZhu': '斗地主'
+    'douDiZhu': '斗地主', 'billiards': '台球', 'horseRacing': '赛马',
+    'shogi': '日本将棋', 'militaryChess': '军棋', 'animalChess': '斗兽棋',
+    'ticTacToe': '井字棋'
 };
 
 function showGameMenu(gameType) {
@@ -7090,50 +7092,79 @@ function chessClick(r, c) {
 
 function isValidChessMove(sr, sc, dr, dc, player) {
     const p = localGameState.board[sr][sc];
-    if (!p) return false;
+    if (!p || p === 0) return false;
+
     const isRed = player === 'red';
-    const piece = isRed ? p.toUpperCase() : p.toLowerCase();
-    
-    // 基础移动规则简化版
+    const piece = p.toUpperCase();
+
+    // 不能吃自己的子
+    const target = localGameState.board[dr][dc];
+    if (target && target !== 0) {
+        const targetIsRed = target === target.toUpperCase();
+        if (isRed && targetIsRed) return false;
+        if (!isRed && !targetIsRed) return false;
+    }
+
     switch(piece) {
-        case 'K': case 'k': // 将/帅
-            return Math.abs(dr-sr) + Math.abs(dc-sc) === 1 && dc >= 3 && dc <= 5 && dr >= (isRed?7:0) && dr <= (isRed?9:2);
-        case 'R': case 'r': // 车
-            return (dr === sr || dc === sc) && isPathClear(sr, sc, dr, dc);
-        case 'N': case 'n': // 马
-            return (Math.abs(dr-sr)===2 && Math.abs(dc-sc)===1 || Math.abs(dr-sr)===1 && Math.abs(dc-sc)===2) && !localGameState.board[sr + (dr-sr)/2][sc + (dc-sc)/2];
-        case 'B': case 'b': // 相/象
+        case 'K': // 将/帅
+            if (Math.abs(dr-sr) + Math.abs(dc-sc) !== 1) return false;
+            if (dc < 3 || dc > 5) return false;
+            if (isRed) return dr >= 7 && dr <= 9;
+            else return dr >= 0 && dr <= 2;
+
+        case 'R': // 车
+            if (dr !== sr && dc !== sc) return false;
+            return isPathClear(sr, sc, dr, dc);
+
+        case 'N': // 马
+            if (!((Math.abs(dr-sr)===2 && Math.abs(dc-sc)===1) || (Math.abs(dr-sr)===1 && Math.abs(dc-sc)===2))) return false;
+            // 蹩马腿
+            if (Math.abs(dr-sr) === 2) {
+                const legR = sr + (dr > sr ? 1 : -1);
+                if (localGameState.board[legR][sc] !== 0) return false;
+            } else {
+                const legC = sc + (dc > sc ? 1 : -1);
+                if (localGameState.board[sr][legC] !== 0) return false;
+            }
+            return true;
+
+        case 'B': // 相/象
             if (Math.abs(dr-sr) !== 2 || Math.abs(dc-sc) !== 2) return false;
             const mx = (sr+dr)/2, my = (sc+dc)/2;
-            if (isRed && dr > 4) return false; // 相不过河
-            if (!isRed && dr < 5) return false; // 象过河
-            return localGameState.board[mx][my] === 0;
-        case 'A': case 'a': // 士
-            return Math.abs(dr-sr)===1 && Math.abs(dc-sc)===1 && dc >= 3 && dc <= 5 && dr >= (isRed?7:0) && dr <= (isRed?9:2);
-        case 'C': case 'c': // 炮
-            if (dr === sr || dc === sc) {
-                const count = countPiecesBetween(sr, sc, dr, dc);
-                if (count === 0) return true;
-                if (count === 1 && localGameState.board[dr][dc] !== 0) return true;
-            }
-            return false;
-        case 'P': case 'p': // 兵/卒
-            // 红兵(大写P)向上走(dr < sr)，黑兵(小写p)向下走(dr > sr)
+            if (localGameState.board[mx][my] !== 0) return false; // 塞象眼
+            if (isRed && dr < 5) return false; // 红相不过河
+            if (!isRed && dr > 4) return false; // 黑象不过河
+            return true;
+
+        case 'A': // 士
+            if (Math.abs(dr-sr) !== 1 || Math.abs(dc-sc) !== 1) return false;
+            if (dc < 3 || dc > 5) return false;
+            if (isRed) return dr >= 7 && dr <= 9;
+            else return dr >= 0 && dr <= 2;
+
+        case 'C': // 炮
+            if (dr !== sr && dc !== sc) return false;
+            const cnt = countPiecesBetween(sr, sc, dr, dc);
+            if (target && target !== 0) return cnt === 1; // 打炮
+            return cnt === 0; // 移动
+
+        case 'P': // 兵/卒
             if (isRed) {
-                if (dr > sr) return false; // 红兵不能后退
-                if (sr <= 4) { // 已过河，可以前进或左右
-                    return Math.abs(dc-sc) + Math.abs(dr-sr) === 1 && (dr < sr || dc !== sc);
+                // 红兵向上走
+                if (sr > 4) { // 未过河，只能前进
+                    return dr === sr - 1 && dc === sc;
+                } else { // 已过河，可前进或左右
+                    return (dr === sr - 1 && dc === sc) || (dr === sr && Math.abs(dc-sc) === 1);
                 }
-                // 未过河，只能前进
-                return dc === sc && dr === sr - 1;
             } else {
-                if (dr < sr) return false; // 黑兵不能后退
-                if (sr >= 5) { // 已过河，可以前进或左右
-                    return Math.abs(dc-sc) + Math.abs(dr-sr) === 1 && (dr > sr || dc !== sc);
+                // 黑卒向下走
+                if (sr < 5) { // 未过河
+                    return dr === sr + 1 && dc === sc;
+                } else { // 已过河
+                    return (dr === sr + 1 && dc === sc) || (dr === sr && Math.abs(dc-sc) === 1);
                 }
-                // 未过河，只能前进
-                return dc === sc && dr === sr + 1;
             }
+
         default: return false;
     }
 }
@@ -7164,33 +7195,42 @@ function countPiecesBetween(sr, sc, dr, dc) {
 function chessAIMove() {
     const gs = localGameState;
     const moves = [];
-    
-    // 收集所有黑方可能的移动
+
     for (let r = 0; r < 10; r++) {
         for (let c = 0; c < 9; c++) {
             const p = gs.board[r][c];
-            if (p && p === p.toLowerCase()) { // 黑方棋子
+            // 黑方棋子是小写字母
+            if (p && typeof p === 'string' && p === p.toLowerCase() && p !== 0) {
                 for (let dr = 0; dr < 10; dr++) {
                     for (let dc = 0; dc < 9; dc++) {
+                        if (r === dr && c === dc) continue;
+                        // 不能吃自己的子
+                        const target = gs.board[dr][dc];
+                        if (target && typeof target === 'string' && target === target.toLowerCase()) continue;
+
                         if (isValidChessMove(r, c, dr, dc, 'black')) {
-                            moves.push({from:{r,c}, to:{r:dr,c:dc}, score: Math.random()});
+                            let score = Math.random() * 10;
+                            // 优先吃子
+                            if (target && target !== 0) {
+                                score += 50;
+                            }
+                            moves.push({from:{r,c}, to:{r:dr,c:dc}, score: score});
                         }
                     }
                 }
             }
         }
     }
-    
-    if (moves.length === 0) { 
-        gs.gameOver = true; 
-        gs.winner = 'red'; 
-        renderLocalChineseChess(); 
-        return; 
+
+    if (moves.length === 0) {
+        gs.gameOver = true;
+        gs.winner = 'red';
+        renderLocalChineseChess();
+        return;
     }
-    
+
     moves.sort((a,b) => b.score - a.score);
-    const m = moves[Math.floor(Math.random() * Math.min(3, moves.length))];
-    
+    const m = moves[0];
     gs.board[m.to.r][m.to.c] = gs.board[m.from.r][m.from.c];
     gs.board[m.from.r][m.from.c] = 0;
     gs.currentPlayer = 'red';
@@ -8666,18 +8706,19 @@ function militaryAIMove() {
 function initLocalBilliards() {
     localGameState = {
         balls: [
-            {x:50, y:100, vx:0, vy:0, color:'#fff', pocketed:false}, // 白球
-            {x:250, y:80, vx:0, vy:0, color:'#f1c40f', pocketed:false}, // 黄
-            {x:280, y:100, vx:0, vy:0, color:'#3498db', pocketed:false}, // 蓝
-            {x:310, y:120, vx:0, vy:0, color:'#e74c3c', pocketed:false}, // 红
-            {x:290, y:140, vx:0, vy:0, color:'#9b59b6', pocketed:false}, // 紫
+            {x:80, y:100, vx:0, vy:0, color:'#fff', pocketed:false},
+            {x:250, y:85, vx:0, vy:0, color:'#f1c40f', pocketed:false},
+            {x:270, y:100, vx:0, vy:0, color:'#3498db', pocketed:false},
+            {x:290, y:115, vx:0, vy:0, color:'#e74c3c', pocketed:false},
+            {x:260, y:130, vx:0, vy:0, color:'#9b59b6', pocketed:false}
         ],
         width: 360,
         height: 200,
         aiming: true,
         playerTurn: true,
         gameOver: false,
-        message: '点击白球发球！'
+        message: '点击白球发球！',
+        animating: false
     };
     renderLocalBilliards();
 }
@@ -8725,74 +8766,113 @@ function renderLocalBilliards() {
     container.innerHTML = html;
 }
 
-function billiardsClick(id) {
+function billiardsClick(idx) {
     const gs = localGameState;
-    if (id === 1 && gs.aiming && gs.playerTurn) {
-        billiardsTarget = 1;
-        gs.message = '现在点击白球拖动瞄准方向！';
-        const angle = Math.random() * Math.PI * 2;
-        const speed = 5;
-        gs.balls[0].vx = Math.cos(angle) * speed;
-        gs.balls[0].vy = Math.sin(angle) * speed;
-        gs.playerTurn = false;
-        gs.message = '白球已发出！';
-        animateBilliards();
-    }
+    if (gs.animating || !gs.playerTurn) return;
+    if (idx !== 0) return; // 只能点白球
+
+    // 随机方向发球
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 4 + Math.random() * 3;
+    gs.balls[0].vx = Math.cos(angle) * speed;
+    gs.balls[0].vy = Math.sin(angle) * speed;
+    gs.playerTurn = false;
+    gs.animating = true;
+    gs.message = '球在运动中...';
+    animateBilliards();
 }
 
 function animateBilliards() {
     const gs = localGameState;
-    let animationId = null;
-    
-    function step() {
-        let moving = false;
-        gs.balls.forEach(ball => {
-            if (ball.pocketed) return;
-            
-            ball.x += ball.vx;
-            ball.y += ball.vy;
-            ball.vx *= 0.98;
-            ball.vy *= 0.98;
-            
-            if (Math.abs(ball.vx) > 0.1 || Math.abs(ball.vy) > 0.1) moving = true;
-            else { ball.vx = 0; ball.vy = 0; }
-            
-            // 边界反弹
-            if (ball.x < 10) { ball.x = 10; ball.vx = -ball.vx; }
-            if (ball.x > gs.width - 10) { ball.x = gs.width - 10; ball.vx = -ball.vx; }
-            if (ball.y < 10) { ball.y = 10; ball.vy = -ball.vy; }
-            if (ball.y > gs.height - 10) { ball.y = gs.height - 10; ball.vy = -ball.vy; }
-            
-            // 检查进袋
-            const pockets = [[10,10],[200,10],[390,10],[10,240],[200,240],[390,240]];
-            pockets.forEach(([px,py]) => {
-                const dist = Math.sqrt((ball.x-px)**2 + (ball.y-py)**2);
-                if (dist < 15) {
-                    ball.pocketed = true;
-                    ball.vx = 0; ball.vy = 0;
-                }
-            });
-        });
-        
-        renderLocalBilliards();
-        
-        if (moving) {
-            animationId = requestAnimationFrame(step);
+    let moving = false;
+
+    for (let i = 0; i < gs.balls.length; i++) {
+        const ball = gs.balls[i];
+        if (ball.pocketed) continue;
+
+        ball.x += ball.vx;
+        ball.y += ball.vy;
+        ball.vx *= 0.985;
+        ball.vy *= 0.985;
+
+        if (Math.abs(ball.vx) < 0.05 && Math.abs(ball.vy) < 0.05) {
+            ball.vx = 0;
+            ball.vy = 0;
         } else {
-            if (animationId) cancelAnimationFrame(animationId);
-            if (gs.balls[0].pocketed) {
-                gs.balls[0].pocketed = false;
-                gs.balls[0].x = 200;
-                gs.balls[0].y = 200;
-                gs.message = '白球落袋，重新发球！';
+            moving = true;
+        }
+
+        // 边界反弹
+        if (ball.x < 10) { ball.x = 10; ball.vx = Math.abs(ball.vx); }
+        if (ball.x > gs.width - 10) { ball.x = gs.width - 10; ball.vx = -Math.abs(ball.vx); }
+        if (ball.y < 10) { ball.y = 10; ball.vy = Math.abs(ball.vy); }
+        if (ball.y > gs.height - 10) { ball.y = gs.height - 10; ball.vy = -Math.abs(ball.vy); }
+
+        // 球与球碰撞
+        for (let j = i + 1; j < gs.balls.length; j++) {
+            const other = gs.balls[j];
+            if (other.pocketed) continue;
+            const dx = other.x - ball.x;
+            const dy = other.y - ball.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < 16) {
+                // 简单碰撞
+                const nx = dx / dist, ny = dy / dist;
+                const dvx = ball.vx - other.vx, dvy = ball.vy - other.vy;
+                const dvn = dvx * nx + dvy * ny;
+                if (dvn > 0) {
+                    ball.vx -= dvn * nx;
+                    ball.vy -= dvn * ny;
+                    other.vx += dvn * nx;
+                    other.vy += dvn * ny;
+                }
+                // 分开
+                const overlap = 16 - dist;
+                ball.x -= overlap/2 * nx;
+                ball.y -= overlap/2 * ny;
+                other.x += overlap/2 * nx;
+                other.y += overlap/2 * ny;
             }
-            gs.playerTurn = true;
-            gs.message = '你的回合，点击白球发球！';
-            renderLocalBilliards();
+        }
+
+        // 进袋检测
+        const pockets = [[10,10],[180,10],[350,10],[10,190],[180,190],[350,190]];
+        for (const [px,py] of pockets) {
+            const dist = Math.sqrt((ball.x-px)**2 + (ball.y-py)**2);
+            if (dist < 18) {
+                ball.pocketed = true;
+                ball.vx = 0;
+                ball.vy = 0;
+            }
         }
     }
-    
-    step();
+
+    renderLocalBilliards();
+
+    if (moving) {
+        requestAnimationFrame(animateBilliards);
+    } else {
+        gs.animating = false;
+        // 白球进袋重置
+        if (gs.balls[0].pocketed) {
+            gs.balls[0].pocketed = false;
+            gs.balls[0].x = 80;
+            gs.balls[0].y = 100;
+            gs.message = '白球落袋！点击白球重新发球';
+        } else {
+            gs.message = '点击白球发球！';
+        }
+        gs.playerTurn = true;
+
+        // 检查是否所有彩球都进了
+        const remaining = gs.balls.filter((b,i) => i !== 0 && !b.pocketed).length;
+        if (remaining === 0) {
+            gs.message = '恭喜！全部清台！';
+            gs.gameOver = true;
+        }
+
+        renderLocalBilliards();
+    }
 }
 
     </script>
@@ -8848,39 +8928,357 @@ function animateBilliards() {
     </div>
 </div>
 
-<!-- 背景音乐 -->
-<audio id="bg-music" loop>
-    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE" type="audio/wav">
-</audio>
-
 <!-- 音乐控制按钮 -->
-<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;bottom:80px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--accent-primary);color:#fff;border:none;font-size:24px;cursor:pointer;z-index:9999;box-shadow:0 4px 10px rgba(0,0,0,0.3);">🎵</button>
+<button id="music-toggle" onclick="openMusicPlayer()" style="position:fixed;bottom:80px;right:20px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#e94560,#f39c12);color:#fff;border:none;font-size:24px;cursor:pointer;z-index:9999;box-shadow:0 4px 10px rgba(0,0,0,0.3);">🎵</button>
+
+<!-- 音乐播放器 -->
+<div id="music-player" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);z-index:99999;overflow-y:auto;">
+    <div style="max-width:500px;margin:0 auto;padding:20px;">
+        <!-- 头部 -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h2 style="color:#fff;margin:0;">🎵 音乐播放器</h2>
+            <button onclick="closeMusicPlayer()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;">✕</button>
+        </div>
+
+        <!-- 搜索框 -->
+        <div style="margin-bottom:20px;">
+            <input type="text" id="music-search" placeholder="搜索歌曲或歌手..." oninput="searchMusic()" style="width:100%;padding:12px 15px;border:1px solid rgba(255,255,255,0.2);border-radius:10px;background:rgba(255,255,255,0.1);color:#fff;font-size:14px;">
+        </div>
+
+        <!-- Tab切换 -->
+        <div style="display:flex;gap:10px;margin-bottom:20px;">
+            <button id="tab-all" onclick="switchMusicTab('all')" style="flex:1;padding:10px;border:none;border-radius:8px;background:var(--accent-primary);color:#fff;cursor:pointer;font-size:14px;">全部歌曲</button>
+            <button id="tab-fav" onclick="switchMusicTab('fav')" style="flex:1;padding:10px;border:none;border-radius:8px;background:rgba(255,255,255,0.1);color:#fff;cursor:pointer;font-size:14px;">❤️ 我的收藏</button>
+        </div>
+
+        <!-- 歌曲列表 -->
+        <div id="music-list" style="display:block;"></div>
+        <div id="fav-list" style="display:none;"></div>
+
+        <!-- 当前播放 -->
+        <div id="now-playing" style="display:none;position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#1a1a2e,#16213e);padding:15px 20px;border-top:1px solid rgba(255,255,255,0.1);">
+            <div style="display:flex;align-items:center;gap:15px;">
+                <div style="flex:1;">
+                    <div id="now-playing-name" style="color:#fff;font-weight:bold;font-size:14px;"></div>
+                    <div id="now-playing-artist" style="color:rgba(255,255,255,0.6);font-size:12px;"></div>
+                </div>
+                <button onclick="prevTrack()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">⏮</button>
+                <button id="play-pause-btn" onclick="togglePlayPause()" style="width:50px;height:50px;border-radius:50%;background:var(--accent-primary);border:none;color:#fff;font-size:20px;cursor:pointer;">▶</button>
+                <button onclick="nextTrack()" style="background:none;border:none;color:#fff;font-size:20px;cursor:pointer;">⏭</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
-// 背景音乐控制
-let isMusicPlaying = false;
-const bgMusic = document.getElementById('bg-music');
+// ===== 音乐播放器 =====
+const musicLibrary = [
+    // 米津玄师
+    {name:'Lemon', artist:'米津玄师', album:'Lemon'},
+    {name:'打上花火', artist:'米津玄师', album:'打上花火'},
+    {name:'LOSER', artist:'米津玄师', album:'LOSER'},
+    {name:'Flamingo', artist:'米津玄师', album:'Flamingo'},
+    {name:'马と鹿', artist:'米津玄师', album:'马と鹿'},
+    {name:'KICK BACK', artist:'米津玄师', album:'KICK BACK'},
+    {name:'感電', artist:'米津玄师', album:'感電'},
+    {name:'ピースサイン', artist:'米津玄师', album:'ピースサイン'},
 
-function toggleMusic() {
-    if (!bgMusic) return;
-    if (isMusicPlaying) {
-        bgMusic.pause();
-        document.getElementById('music-toggle').textContent = '🔇';
-    } else {
-        bgMusic.play().catch(e => console.log('Music play failed:', e));
-        document.getElementById('music-toggle').textContent = '🎵';
-    }
-    isMusicPlaying = !isMusicPlaying;
+    // 周杰伦
+    {name:'晴天', artist:'周杰伦', album:'叶惠美'},
+    {name:'七里香', artist:'周杰伦', album:'七里香'},
+    {name:'稻香', artist:'周杰伦', album:'魔杰座'},
+    {name:'青花瓷', artist:'周杰伦', album:'我很忙'},
+    {name:'简单爱', artist:'周杰伦', album:'范特西'},
+    {name:'夜曲', artist:'周杰伦', album:'十一月的萧邦'},
+    {name:'告白气球', artist:'周杰伦', album:'周杰伦的床边故事'},
+    {name:'不能说的秘密', artist:'周杰伦', album:'不能说的秘密'},
+    {name:'听妈妈的话', artist:'周杰伦', album:'依然范特西'},
+    {name:'双截棍', artist:'周杰伦', album:'范特西'},
+    {name:'以父之名', artist:'周杰伦', album:'叶惠美'},
+    {name:'东风破', artist:'周杰伦', album:'叶惠美'},
+    {name:'发如雪', artist:'周杰伦', album:'十一月的萧邦'},
+
+    // 李荣浩
+    {name:'李白', artist:'李荣浩', album:'模特'},
+    {name:'年少有为', artist:'李荣浩', album:'耳朵'},
+    {name:'麻雀', artist:'李荣浩', album:'麻雀'},
+    {name:'戒烟', artist:'李荣浩', album:'模特'},
+    {name:'不将就', artist:'李荣浩', album:'不将就'},
+    {name:'喜剧之王', artist:'李荣浩', album:'耳朵'},
+    {name:'模特', artist:'李荣浩', album:'模特'},
+    {name:'老街', artist:'李荣浩', album:'模特'},
+
+    // 陈粒
+    {name:'奇妙能力歌', artist:'陈粒', album:'如也'},
+    {name:'小半', artist:'陈粒', album:'小梦大半'},
+    {name:'走马', artist:'陈粒', album:'如也'},
+    {name:'历历万乡', artist:'陈粒', album:'如也'},
+    {name:'光', artist:'陈粒', album:'小梦大半'},
+    {name:'易燃易爆炸', artist:'陈粒', album:'如也'},
+
+    // Beyond
+    {name:'海阔天空', artist:'Beyond', album:'乐与怒'},
+    {name:'光辉岁月', artist:'Beyond', album:'命运派对'},
+    {name:'真的爱你', artist:'Beyond', album:'Beyond IV'},
+    {name:'大地', artist:'Beyond', album:'秘密警察'},
+    {name:'喜欢你', artist:'Beyond', album:'秘密警察'},
+    {name:'不再犹豫', artist:'Beyond', album:'犹豫'},
+    {name:'长城', artist:'Beyond', album:'继续革命'},
+    {name:'Amani', artist:'Beyond', album:'犹豫'},
+
+    // 小虎队
+    {name:'爱', artist:'小虎队', album:'爱'},
+    {name:'青苹果乐园', artist:'小虎队', album:'青苹果乐园'},
+    {name:'蝴蝶飞呀', artist:'小虎队', album:'爱'},
+    {name:'红蜻蜓', artist:'小虎队', album:'红蜻蜓'},
+    {name:'放心去飞', artist:'小虎队', album:'爱'},
+    {name:'星光依旧灿烂', artist:'小虎队', album:'星光依旧灿烂'},
+
+    // 白鹿
+    {name:'临安初雨', artist:'白鹿', album:'临安初雨'},
+    {name:'入梦', artist:'白鹿', album:'入梦'},
+    {name:'长月烬明', artist:'白鹿', album:'长月烬明'},
+    {name:'云与海', artist:'白鹿', album:'云与海'},
+    {name:'被风吹过的夏天', artist:'白鹿', album:'被风吹过的夏天'},
+
+    // 周深
+    {name:'大鱼', artist:'周深', album:'大鱼海棠'},
+    {name:'起风了', artist:'周深', album:'起风了'},
+    {name:'达拉崩吧', artist:'周深', album:'达拉崩吧'},
+    {name:'化身孤岛的鲸', artist:'周深', album:'深的深'},
+    {name:'明月传说', artist:'周深', album:'明月传说'},
+    {name:'和光同尘', artist:'周深', album:'和光同尘'},
+    {name:'触不可及', artist:'周深', album:'触不可及'},
+
+    // 林俊杰
+    {name:'江南', artist:'林俊杰', album:'第二天堂'},
+    {name:'修炼爱情', artist:'林俊杰', album:'因你而在'},
+    {name:'可惜没如果', artist:'林俊杰', album:'新地球'},
+    {name:'她说', artist:'林俊杰', album:'她说'},
+    {name:'不为谁而作的歌', artist:'林俊杰', album:'和自己对话'},
+    {name:'背对背拥抱', artist:'林俊杰', album:'JJ陆'},
+    {name:'醉赤壁', artist:'林俊杰', album:'JJ陆'},
+    {name:'小酒窝', artist:'林俊杰', album:'JJ陆'},
+    {name:'曹操', artist:'林俊杰', album:'曹操'},
+    {name:'一千年以后', artist:'林俊杰', album:'第二天堂'},
+];
+
+let currentMusicTab = 'all';
+let currentTrackIndex = -1;
+let isPlaying = false;
+let favorites = JSON.parse(localStorage.getItem('musicFavorites') || '[]');
+let audioContext = null;
+let currentOscillator = null;
+let musicInterval = null;
+
+function openMusicPlayer() {
+    document.getElementById('music-player').style.display = 'block';
+    renderMusicList();
+    renderFavList();
 }
 
-// 页面加载后自动播放（可能需要用户交互后才能播放）
-document.addEventListener('click', function initMusic() {
-    if (!isMusicPlaying && bgMusic) {
-        bgMusic.volume = 0.3;
-        toggleMusic();
+function closeMusicPlayer() {
+    document.getElementById('music-player').style.display = 'none';
+    stopMusic();
+}
+
+function switchMusicTab(tab) {
+    currentMusicTab = tab;
+    document.getElementById('tab-all').style.background = tab === 'all' ? 'var(--accent-primary)' : 'rgba(255,255,255,0.1)';
+    document.getElementById('tab-fav').style.background = tab === 'fav' ? 'var(--accent-primary)' : 'rgba(255,255,255,0.1)';
+    document.getElementById('music-list').style.display = tab === 'all' ? 'block' : 'none';
+    document.getElementById('fav-list').style.display = tab === 'fav' ? 'block' : 'none';
+}
+
+function renderMusicList(filter = '') {
+    const container = document.getElementById('music-list');
+    let songs = musicLibrary;
+    if (filter) {
+        songs = songs.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()) || s.artist.toLowerCase().includes(filter.toLowerCase()));
     }
-    document.removeEventListener('click', initMusic);
-}, {once: true});
+
+    let html = '';
+    // 按歌手分组
+    const groups = {};
+    songs.forEach(s => {
+        if (!groups[s.artist]) groups[s.artist] = [];
+        groups[s.artist].push(s);
+    });
+
+    for (const [artist, tracks] of Object.entries(groups)) {
+        html += '<div style="margin-bottom:15px;">';
+        html += '<div style="color:var(--accent-primary);font-weight:bold;font-size:14px;margin-bottom:8px;padding-left:5px;">🎤 ' + artist + ' (' + tracks.length + '首)</div>';
+        tracks.forEach((track, idx) => {
+            const globalIdx = musicLibrary.indexOf(track);
+            const isFav = favorites.includes(globalIdx);
+            const isCurrent = globalIdx === currentTrackIndex;
+            html += '<div onclick="playTrack(' + globalIdx + ')" style="display:flex;align-items:center;padding:10px;border-radius:8px;margin-bottom:2px;background:' + (isCurrent ? 'rgba(233,69,96,0.2)' : 'rgba(255,255,255,0.05)') + ';cursor:pointer;">';
+            html += '<div style="flex:1;">';
+            html += '<div style="color:' + (isCurrent ? '#e94560' : '#fff') + ';font-size:14px;">' + (isCurrent ? '▶ ' : '') + track.name + '</div>';
+            html += '<div style="color:rgba(255,255,255,0.5);font-size:12px;">' + track.album + '</div>';
+            html += '</div>';
+            html += '<button onclick="event.stopPropagation();toggleFavorite(' + globalIdx + ')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:5px;">' + (isFav ? '❤️' : '🤍') + '</button>';
+            html += '</div>';
+        });
+        html += '</div>';
+    }
+
+    container.innerHTML = html;
+}
+
+function renderFavList() {
+    const container = document.getElementById('fav-list');
+    if (favorites.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:40px;color:rgba(255,255,255,0.5);">还没有收藏歌曲<br><small>点击歌曲右侧的 🤍 收藏</small></div>';
+        return;
+    }
+
+    let html = '';
+    favorites.forEach(idx => {
+        const track = musicLibrary[idx];
+        if (!track) return;
+        const isCurrent = idx === currentTrackIndex;
+        html += '<div onclick="playTrack(' + idx + ')" style="display:flex;align-items:center;padding:10px;border-radius:8px;margin-bottom:2px;background:' + (isCurrent ? 'rgba(233,69,96,0.2)' : 'rgba(255,255,255,0.05)') + ';cursor:pointer;">';
+        html += '<div style="flex:1;">';
+        html += '<div style="color:' + (isCurrent ? '#e94560' : '#fff') + ';font-size:14px;">' + (isCurrent ? '▶ ' : '') + track.name + '</div>';
+        html += '<div style="color:rgba(255,255,255,0.5);font-size:12px;">' + track.artist + ' - ' + track.album + '</div>';
+        html += '</div>';
+        html += '<button onclick="event.stopPropagation();toggleFavorite(' + idx + ')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:5px;">❤️</button>';
+        html += '</div>';
+    });
+
+    container.innerHTML = html;
+}
+
+function searchMusic() {
+    const query = document.getElementById('music-search').value;
+    renderMusicList(query);
+}
+
+function toggleFavorite(idx) {
+    const pos = favorites.indexOf(idx);
+    if (pos > -1) {
+        favorites.splice(pos, 1);
+    } else {
+        favorites.push(idx);
+    }
+    localStorage.setItem('musicFavorites', JSON.stringify(favorites));
+    renderMusicList(document.getElementById('music-search').value);
+    renderFavList();
+}
+
+// 使用 Web Audio API 生成简单旋律
+function playTrack(idx) {
+    currentTrackIndex = idx;
+    const track = musicLibrary[idx];
+
+    document.getElementById('now-playing').style.display = 'block';
+    document.getElementById('now-playing-name').textContent = track.name;
+    document.getElementById('now-playing-artist').textContent = track.artist;
+    document.getElementById('play-pause-btn').textContent = '⏸';
+    isPlaying = true;
+
+    // 生成旋律
+    stopMusic();
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    // 根据歌曲名生成不同的旋律
+    const seed = hashCode(track.name + track.artist);
+    const notes = generateMelody(seed);
+    let noteIndex = 0;
+
+    function playNote() {
+        if (!isPlaying || noteIndex >= notes.length) {
+            if (isPlaying) noteIndex = 0; // 循环
+            else return;
+        }
+
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+
+        osc.frequency.value = notes[noteIndex];
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.15, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+
+        osc.start(audioContext.currentTime);
+        osc.stop(audioContext.currentTime + 0.4);
+
+        noteIndex++;
+        musicInterval = setTimeout(playNote, 450);
+    }
+
+    playNote();
+    renderMusicList(document.getElementById('music-search').value);
+    renderFavList();
+}
+
+function hashCode(str) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+    }
+    return Math.abs(hash);
+}
+
+function generateMelody(seed) {
+    const scales = [
+        [262,294,330,349,392,440,494,523], // C大调
+        [294,330,370,392,440,494,554,587], // D大调
+        [330,370,415,440,494,554,622,659], // E大调
+        [349,392,440,466,523,587,622,698], // F大调
+        [392,440,494,523,587,659,698,784], // G大调
+        [440,494,554,587,659,740,784,880], // A大调
+    ];
+
+    const scale = scales[seed % scales.length];
+    const melody = [];
+    const len = 16 + (seed % 16);
+
+    for (let i = 0; i < len; i++) {
+        const idx = (seed + i * 3) % scale.length;
+        melody.push(scale[idx]);
+    }
+
+    return melody;
+}
+
+function stopMusic() {
+    isPlaying = false;
+    if (musicInterval) clearTimeout(musicInterval);
+    if (audioContext) audioContext.close().catch(()=>{});
+    audioContext = null;
+}
+
+function togglePlayPause() {
+    if (currentTrackIndex === -1) return;
+    if (isPlaying) {
+        stopMusic();
+        document.getElementById('play-pause-btn').textContent = '▶';
+    } else {
+        playTrack(currentTrackIndex);
+    }
+}
+
+function nextTrack() {
+    if (currentTrackIndex < musicLibrary.length - 1) {
+        playTrack(currentTrackIndex + 1);
+    } else {
+        playTrack(0);
+    }
+}
+
+function prevTrack() {
+    if (currentTrackIndex > 0) {
+        playTrack(currentTrackIndex - 1);
+    } else {
+        playTrack(musicLibrary.length - 1);
+    }
+}
 </script>
 
 </body>
