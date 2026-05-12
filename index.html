@@ -6133,7 +6133,17 @@ function douDiZhuPlay() {
 
         document.addEventListener('DOMContentLoaded', () => {
             renderCountries();
+            // 确保语言页面的确认按钮初始禁用
+            const btn = document.getElementById('confirm-lang-btn');
+            if (btn) btn.disabled = true;
         });
+
+        // 页面加载后立即初始化
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(renderCountries, 100);
+            const btn = document.getElementById('confirm-lang-btn');
+            if (btn) btn.disabled = true;
+        }
 
         // 立即执行启动动画（不依赖 DOMContentLoaded）
         if (document.readyState === 'loading') {
