@@ -6870,9 +6870,27 @@ function douDiZhuPlay() {
 
         function renderCountries(filter = '') {
             const grid = document.getElementById('country-grid');
-            grid.innerHTML = countries
-                .filter(c => c.name.includes(filter))
-                .map(c => `
+            // 合并 countries 数组和 LANGUAGES 对象
+            const allLangs = [];
+            // 先添加 countries 数组中的国家
+            countries.forEach(c => {
+                allLangs.push({code: c.code, name: c.name, flag: c.flag});
+            });
+            // 再添加 LANGUAGES 中不在 countries 中的语言
+            if (typeof LANGUAGES !== 'undefined') {
+                const countryCodes = new Set(countries.map(c => c.code));
+                for (const [code, info] of Object.entries(LANGUAGES)) {
+                    if (!countryCodes.has(code)) {
+                        allLangs.push({code: code, name: info.native || info.name, flag: info.flag});
+                    }
+                }
+            }
+            
+            const filtered = filter 
+                ? allLangs.filter(c => c.name.toLowerCase().includes(filter.toLowerCase()) || c.code.toLowerCase().includes(filter.toLowerCase()))
+                : allLangs;
+            
+            grid.innerHTML = filtered.map(c => `
                     <div class="country-item ${selectedLang === c.code ? 'selected' : ''}" 
                          onclick="selectLanguage('${c.code}')">
                         <div class="country-flag">${c.flag}</div>
