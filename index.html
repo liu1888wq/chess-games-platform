@@ -4542,9 +4542,9 @@ function confirmLanguage() {
     // 应用语言
     applyLanguage(currentLang);
     
-    // 显示登录界面
+    // 直接进入大厅，跳过登录
     document.getElementById('lang-screen').style.display = 'none';
-    document.getElementById('login-screen').style.display = 'flex';
+    switchPage('home-page');
     
     // 显示语言切换按钮
     document.getElementById('lang-switch-bar').style.display = 'block';
@@ -6370,8 +6370,8 @@ function douDiZhuPlay() {
                     try { applyLanguage(selectedLang); } catch(e) { console.log('applyLanguage error:', e); }
                 }
                 
-                // 切换到登录页
-                switchPage('login-page');
+                // 直接进入大厅，跳过登录
+                switchPage('home-page');
             }
         }
 
@@ -6678,6 +6678,19 @@ function douDiZhuPlay() {
                 initRankData();
                 renderRankList();
             }, 100);
+
+            // 页面加载时检查是否已选择语言
+            const savedLang = localStorage.getItem('selectedLang');
+            if (savedLang) {
+                // 已选过语言，直接进入大厅
+                selectedLang = savedLang;
+                if (typeof currentLang !== 'undefined') currentLang = savedLang;
+                if (typeof applyLanguage === 'function') {
+                    try { applyLanguage(savedLang); } catch(e) {}
+                }
+                switchPage('home-page');
+            }
+            // 否则显示语言选择页（默认行为）
         });
 
         // 页面加载后立即初始化
@@ -8183,28 +8196,25 @@ function flightDice() {
 }
 
 // ===== 赛马 Horse Racing =====
-let horseRacingState = null;
 
 function initLocalHorseRacing() {
-    const horses = ['赤兔马','汗血宝马','乌骓马','的卢马'];
-    const colors = ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6'];
-    horseRacingState = {
-        horses: horses.map((name, i) => ({
-            name: name,
-            color: colors[i],
-            pos: 0,
-            speed: 0
-        })),
-        currentHorse: 0, // 玩家选择的马
+    localGameState = {
+        horses: [
+            { name: '赤兔马', pos: 0, color: '#e74c3c', speed: 0 },
+            { name: '汗血宝马', pos: 0, color: '#3498db', speed: 0 },
+            { name: '乌骓马', pos: 0, color: '#2ecc71', speed: 0 },
+            { name: '的卢马', pos: 0, color: '#9b59b6', speed: 0 }
+        ],
+        currentHorse: 0,
         playerBet: 0,
         playerChips: 1000,
-        racePhase: 'betting', // betting, racing, result
+        racePhase: 'betting',
         finishOrder: [],
         trackLength: 20,
         message: '选择你喜欢的马下注！',
         isRacing: false
     };
-    localGameState = horseRacingState;
+    renderLocalHorseRacing();
 }
 
 function renderLocalHorseRacing() {
@@ -9654,13 +9664,19 @@ let currentOscillator = null;
 let musicTimeout = null;
 
 function openMusicPlayer() {
-    document.getElementById('music-player').style.display = 'block';
-    renderMusicList();
-    renderFavList();
+    const player = document.getElementById('music-player');
+    if (player) {
+        player.style.display = 'block';
+        renderMusicList();
+        renderFavList();
+    }
 }
 
 function closeMusicPlayer() {
-    document.getElementById('music-player').style.display = 'none';
+    const player = document.getElementById('music-player');
+    if (player) {
+        player.style.display = 'none';
+    }
     stopMusic();
 }
 
