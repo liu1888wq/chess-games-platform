@@ -1235,6 +1235,78 @@
         <button class="logout-btn" onclick="handleLogout()">退出登录</button>
     </div>
 
+    <!-- 排行榜页面 -->
+    <div id="rank-page" class="page">
+        <div class="page-header">
+            <h1 class="page-title">🏆 排行榜</h1>
+        </div>
+        
+        <div style="padding: 20px;">
+            <!-- 前三名 -->
+            <div style="display: flex; justify-content: center; align-items: flex-end; margin-bottom: 30px; gap: 10px;">
+                <!-- 第二名 -->
+                <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #C0C0C0, #E8E8E8); border-radius: 15px; width: 100px;">
+                    <div style="font-size: 30px; margin-bottom: 5px;">🥈</div>
+                    <div style="font-weight: bold; color: #333;">Gibel</div>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">胜率 99.6%</div>
+                    <div style="font-size: 11px; color: #888;">72,000局</div>
+                    <div style="font-size: 10px; color: #e94560; margin-top: 3px;">+450/天</div>
+                </div>
+                
+                <!-- 第一名 -->
+                <div style="text-align: center; padding: 20px; background: linear-gradient(135deg, #FFD700, #FFA500); border-radius: 15px; width: 120px; transform: translateY(-10px);">
+                    <div style="font-size: 40px; margin-bottom: 5px;">👑</div>
+                    <div style="font-weight: bold; color: #333; font-size: 18px;">liu</div>
+                    <div style="font-size: 14px; color: #666; margin-top: 5px;">胜率 99.8%</div>
+                    <div style="font-size: 12px; color: #888;">80,000局</div>
+                    <div style="font-size: 11px; color: #e94560; margin-top: 3px;">+1,000/天 🔥</div>
+                </div>
+                
+                <!-- 第三名 -->
+                <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #CD7F32, #D4A574); border-radius: 15px; width: 100px;">
+                    <div style="font-size: 30px; margin-bottom: 5px;">🥉</div>
+                    <div style="font-weight: bold; color: #333;">Player3</div>
+                    <div style="font-size: 12px; color: #666; margin-top: 5px;">胜率 98.5%</div>
+                    <div style="font-size: 11px; color: #888;">65,000局</div>
+                    <div style="font-size: 10px; color: #e94560; margin-top: 3px;">+300/天</div>
+                </div>
+            </div>
+            
+            <!-- 其他排名 -->
+            <div style="background: var(--glass-bg); border-radius: 15px; padding: 15px;">
+                <h3 style="margin-bottom: 15px; color: var(--accent-primary);">其他玩家</h3>
+                
+                <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass-border);">
+                    <span style="color: #888;">4. Dragon</span>
+                    <span style="color: var(--accent-primary);">胜率 97.2%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass-border);">
+                    <span style="color: #888;">5. Master</span>
+                    <span style="color: var(--accent-primary);">胜率 96.8%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass-border);">
+                    <span style="color: #888;">6. King</span>
+                    <span style="color: var(--accent-primary);">胜率 95.5%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--glass-border);">
+                    <span style="color: #888;">7. Queen</span>
+                    <span style="color: var(--accent-primary);">胜率 94.2%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; padding: 12px;">
+                    <span style="color: #888;">8. Ace</span>
+                    <span style="color: var(--accent-primary);">胜率 93.1%</span>
+                </div>
+            </div>
+            
+            <!-- 统计信息 -->
+            <div style="margin-top: 20px; padding: 15px; background: var(--glass-bg); border-radius: 15px; text-align: center;">
+                <p style="color: var(--text-secondary); font-size: 14px;">今日新增对局</p>
+                <p style="font-size: 28px; font-weight: bold; color: var(--accent-primary); margin-top: 5px;">12,847</p>
+                <p style="color: var(--text-secondary); font-size: 12px; margin-top: 5px;">全平台累计 2,456,789 局</p>
+            </div>
+        </div>
+    </div>
+
     <!-- 底部导航 -->
     <nav class="bottom-nav" id="bottom-nav" style="display: none;">
         <div class="nav-item active" onclick="switchTab('home')">
@@ -6051,7 +6123,7 @@ function douDiZhuPlay() {
             event.currentTarget.classList.add('active');
             if (tab === 'home') switchPage('home-page');
             else if (tab === 'profile') switchPage('profile-page');
-            else showModal('提示', '排行榜功能即将上线');
+            else if (tab === 'rank') switchPage('rank-page');
         }
 
         function enterGame(gameType) {
@@ -6319,6 +6391,26 @@ function startLocalAIGame(gameType, difficulty) {
     
     // 延迟渲染确保DOM已更新
     setTimeout(() => renderLocalGame(), 100);
+}
+
+// ===== 音效函数 =====
+// 创建简单的落子音效
+function playMoveSound() {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
 }
 
 // ===== 五子棋 AI =====
@@ -7867,13 +7959,22 @@ let selectedDoudizhuCards = [];
 
 function selectDoudizhuCard(index) {
     const idx = selectedDoudizhuCards.indexOf(index);
-    const el = document.getElementById(`ddz-card-${index}`);
+    const cardEl = document.getElementById('ddz-card-' + index);
+    
     if (idx > -1) {
+        // 取消选中
         selectedDoudizhuCards.splice(idx, 1);
-        if (el) el.style.border = '2px solid transparent';
+        if (cardEl) {
+            cardEl.style.border = '2px solid transparent';
+            cardEl.style.transform = 'translateY(0)';
+        }
     } else {
+        // 选中
         selectedDoudizhuCards.push(index);
-        if (el) el.style.border = '2px solid #e94560';
+        if (cardEl) {
+            cardEl.style.border = '2px solid #e94560';
+            cardEl.style.transform = 'translateY(-10px)';
+        }
     }
 }
 
@@ -8669,6 +8770,41 @@ function animateBilliards() {
         </div>
     </div>
 </div>
+
+<!-- 背景音乐 -->
+<audio id="bg-music" loop>
+    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZURE" type="audio/wav">
+</audio>
+
+<!-- 音乐控制按钮 -->
+<button id="music-toggle" onclick="toggleMusic()" style="position:fixed;bottom:80px;right:20px;width:50px;height:50px;border-radius:50%;background:var(--accent-primary);color:#fff;border:none;font-size:24px;cursor:pointer;z-index:9999;box-shadow:0 4px 10px rgba(0,0,0,0.3);">🎵</button>
+
+<script>
+// 背景音乐控制
+let isMusicPlaying = false;
+const bgMusic = document.getElementById('bg-music');
+
+function toggleMusic() {
+    if (!bgMusic) return;
+    if (isMusicPlaying) {
+        bgMusic.pause();
+        document.getElementById('music-toggle').textContent = '🔇';
+    } else {
+        bgMusic.play().catch(e => console.log('Music play failed:', e));
+        document.getElementById('music-toggle').textContent = '🎵';
+    }
+    isMusicPlaying = !isMusicPlaying;
+}
+
+// 页面加载后自动播放（可能需要用户交互后才能播放）
+document.addEventListener('click', function initMusic() {
+    if (!isMusicPlaying && bgMusic) {
+        bgMusic.volume = 0.3;
+        toggleMusic();
+    }
+    document.removeEventListener('click', initMusic);
+}, {once: true});
+</script>
 
 </body>
 </html>
