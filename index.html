@@ -1019,6 +1019,11 @@
                 <div class="game-name">飞行棋</div>
                 <div class="game-players">3千人在线</div>
             </div>
+            <div class="game-card" onclick="showGameMenu('horseRacing')">
+                <div class="game-icon">🏇</div>
+                <div class="game-name">赛马</div>
+                <div class="game-players">2千人在线</div>
+            </div>
         </div>
         
         <h3 style="margin: 25px 0 15px; font-size: 18px;">扑克游戏</h3>
@@ -6197,6 +6202,7 @@ function startLocalAIGame(gameType, difficulty) {
         case 'go': initLocalGo(); break;
         case 'checkers': initLocalCheckers(); break;
         case 'flightChess': initLocalFlightChess(); break;
+        case 'horseRacing': initLocalHorseRacing(); break;
         case 'poker': initLocalPoker(); break;
         case 'texasHoldem': initLocalTexasHoldem(); break;
         case 'douDiZhu': initLocalDouDiZhu(); break;
@@ -6637,6 +6643,7 @@ function renderLocalGame() {
         case 'go': renderLocalGo(); break;
         case 'checkers': renderLocalCheckers(); break;
         case 'flightChess': renderLocalFlightChess(); break;
+        case 'horseRacing': renderLocalHorseRacing(); break;
         case 'poker': renderLocalPoker(); break;
         case 'texasHoldem': renderLocalTexasHoldem(); break;
         case 'douDiZhu': renderLocalDouDiZhu(); break;
@@ -7109,6 +7116,173 @@ function flightDice() {
         renderLocalFlightChess();
     }, 1000);
 }
+
+// ===== 赛马 Horse Racing =====
+let horseRacingState = null;
+
+function initLocalHorseRacing() {
+    const horses = ['赤兔马','汗血宝马','乌骓马','的卢马'];
+    const colors = ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6'];
+    horseRacingState = {
+        horses: horses.map((name, i) => ({
+            name: name,
+            color: colors[i],
+            pos: 0,
+            speed: 0
+        })),
+        currentHorse: 0, // 玩家选择的马
+        playerBet: 0,
+        playerChips: 1000,
+        racePhase: 'betting', // betting, racing, result
+        finishOrder: [],
+        trackLength: 20,
+        message: '选择你喜欢的马下注！',
+        isRacing: false
+    };
+}
+
+function renderLocalHorseRacing() {
+    const container = document.getElementById('game-board');
+    if (!container) return;
+    const gs = horseRacingState;
+    
+    let html = '<div style="max-width:380px;margin:0 auto;padding:10px;">';
+    html += '<h3 style="text-align:center;margin-bottom:10px;">🏇 赛马</h3>';
+    html += `<p style="text-align:center;margin-bottom:15px;color:var(--accent-primary);">${gs.message}</p>`;
+    html += `<p style="text-align:center;margin-bottom:15px;">你的筹码: <span style="color:#f39c12;font-weight:bold;">${gs.playerChips}</span></p>`;
+    
+    // 赛道
+    html += '<div style="background:#228B22;border-radius:15px;padding:10px;margin-bottom:15px;">';
+    gs.horses.forEach((horse, i) => {
+        const pct = Math.min(100, (horse.pos / gs.trackLength) * 100);
+        const isSelected = gs.currentHorse === i && gs.racePhase === 'betting';
+        const border = isSelected ? '3px solid #f39c12' : '2px solid transparent';
+        const selBg = isSelected ? 'background:rgba(255,255,255,0.2);border-radius:10px;' : '';
+        
+        html += `<div style="${selBg}padding:8px;margin-bottom:5px;">`;
+        html += `<div style="display:flex;justify-content:space-between;margin-bottom:5px;">`;
+        html += `<span style="color:#fff;font-weight:bold;">${i+1}. ${horse.name}</span>`;
+        html += `<span style="color:#f39c12;">${horse.pos}/${gs.trackLength}</span>`;
+        html += `</div>`;
+        html += `<div onclick="${gs.racePhase === 'betting' ? `selectHorse(${i})` : ''}" style="height:30px;background:#8B4513;border-radius:15px;overflow:hidden;cursor:${gs.racePhase === 'betting' ? 'pointer' : 'default'};border:${border};position:relative;">`;
+        html += `<div style="position:absolute;left:${pct}%;top:50%;transform:translate(-50%,-50%);transition:left 0.5s;">`;
+        html += `<div style="font-size:24px;">🐎</div>`;
+        html += `</div>`;
+        html += `</div>`;
+        html += `</div>`;
+    });
+    html += '</div>';
+    
+    // 下注区域
+    if (gs.racePhase === 'betting') {
+        html += '<div style="background:var(--glass-bg);border-radius:15px;padding:15px;text-align:center;">';
+        html += `<p style="margin-bottom:10px;">你选择了: <span style="color:#f39c12;font-weight:bold;">${gs.horses[gs.currentHorse].name}</span></p>`;
+        html += `<p style="margin-bottom:10px;">下注金额:</p>`;
+        html += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:15px;">`;
+        [10, 50, 100, 200].forEach(amt => {
+            const dis = amt > gs.playerChips ? 'opacity:0.5;cursor:not-allowed;' : 'cursor:pointer;';
+            html += `<button onclick="horseRacingBet(${amt})" style="padding:10px 15px;background:${amt === gs.playerBet ? 'var(--accent-primary)' : 'var(--glass-bg)'};color:#fff;border:1px solid var(--glass-border);border-radius:10px;font-size:14px;${dis}">${amt}</button>`;
+        });
+        html += '</div>';
+        
+        if (gs.playerBet > 0) {
+            html += `<p style="margin-bottom:10px;">赔率 1:3，预计赢 <span style="color:#2ecc71;font-weight:bold;">${gs.playerBet * 3}</span></p>`;
+            html += `<button onclick="horseRacingStart()" style="width:100%;padding:15px;background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;border-radius:25px;font-size:18px;font-weight:bold;cursor:pointer;">🏁 开始比赛！</button>`;
+        }
+        html += '</div>';
+    }
+    
+    // 比赛结果
+    if (gs.racePhase === 'result') {
+        const won = gs.finishOrder[0] === gs.currentHorse;
+        html += '<div style="background:var(--glass-bg);border-radius:15px;padding:20px;text-align:center;">';
+        if (won) {
+            html += `<h2 style="color:#2ecc71;margin-bottom:10px;">🎉 你赢了！</h2>`;
+            html += `<p style="margin-bottom:10px;">${gs.horses[gs.currentHorse].name} 第一名！</p>`;
+            html += `<p style="font-size:24px;color:#f39c12;">+${gs.playerBet * 3}</p>`;
+        } else {
+            html += `<h2 style="color:#e74c3c;margin-bottom:10px;">😢 你输了！</h2>`;
+            html += `<p style="margin-bottom:10px;">第一名: ${gs.horses[gs.finishOrder[0]].name}</p>`;
+            html += `<p style="color:#999;">-${gs.playerBet}</p>`;
+        }
+        html += `<button onclick="showGameMenu('horseRacing')" style="margin-top:15px;padding:12px 30px;background:var(--accent-primary);color:#fff;border:none;border-radius:20px;font-size:16px;cursor:pointer;">再来一局</button>`;
+        html += '</div>';
+    }
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function selectHorse(index) {
+    horseRacingState.currentHorse = index;
+    horseRacingState.message = `你选择了 ${horseRacingState.horses[index].name}`;
+    renderLocalHorseRacing();
+}
+
+function horseRacingBet(amount) {
+    if (amount > horseRacingState.playerChips) return;
+    horseRacingState.playerBet = amount;
+    horseRacingState.message = `下注 ${amount} 筹码`;
+    renderLocalHorseRacing();
+}
+
+function horseRacingStart() {
+    const gs = horseRacingState;
+    if (gs.playerBet <= 0) return;
+    
+    gs.playerChips -= gs.playerBet;
+    gs.racePhase = 'racing';
+    gs.message = '比赛进行中...';
+    gs.isRacing = true;
+    
+    // 重置位置
+    gs.horses.forEach(h => h.pos = 0);
+    gs.finishOrder = [];
+    
+    renderLocalHorseRacing();
+    
+    // 比赛动画
+    const raceInterval = setInterval(() => {
+        // 每匹马随机前进
+        gs.horses.forEach((horse, i) => {
+            if (!gs.finishOrder.includes(i)) {
+                // 速度随机
+                horse.speed = Math.random() * 3;
+                horse.pos += horse.speed;
+                
+                // 到达终点
+                if (horse.pos >= gs.trackLength && !gs.finishOrder.includes(i)) {
+                    gs.finishOrder.push(i);
+                }
+            }
+        });
+        
+        renderLocalHorseRacing();
+        
+        // 检查比赛结束
+        if (gs.finishOrder.length === gs.horses.length) {
+            clearInterval(raceInterval);
+            gs.isRacing = false;
+            gs.racePhase = 'result';
+            
+            // 结算
+            const won = gs.finishOrder[0] === gs.currentHorse;
+            if (won) {
+                gs.playerChips += gs.playerBet * 3;
+                gs.message = '恭喜你赢了！';
+            } else {
+                gs.message = '很遗憾，你输了';
+            }
+            
+            if (gs.playerChips <= 0) {
+                gs.message = '筹码用完了！';
+            }
+            
+            renderLocalHorseRacing();
+        }
+    }, 300);
+}
+
 // ===== 德州扑克 Texas Hold'em =====
 let texasState = null;
 
